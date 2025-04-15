@@ -43,7 +43,11 @@ CREATE TABLE IF NOT EXISTS Vlauve(
     refStation INT,
     PRIMARY KEY (ref),
     FOREIGN KEY (refStation) REFERENCES Station (numStation),
-    CHECK (NOT (discriminant = 'vLauveElectrique' AND niveauBatterie < 0.5 AND statut <> 'nonDisponible'))
+    CHECK (NOT (discriminant = 'vLauveElectrique' AND niveauBatterie < 0.5 AND statut <> 'nonDisponible')),
+    CHECK (
+        (assistance = TRUE AND discriminant = 'vLauveElectrique') OR
+        (assistance = FALSE AND discriminant = 'vlauveNonElectrique')
+    )
 );
 
 -- CREATE TABLE IF NOT EXISTS Ville(
