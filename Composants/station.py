@@ -1,30 +1,31 @@
 from vlauve import vlauve
 class Station :
     
-    def __init__(self, num_station, nom, coordonneesGPS, nom_rue, numero_rue,
-                 capacite_totale, nb_places_electriques, nb_places_non_electriques,
-                 nb_vlauves_electriques, nb_vlauves_non_electriques):
-        self.num_station = num_station
+    def __init__(self, numStation, nom, coordonneesGPS, nomRue, numeroRue,
+                 nbPlacesTotales, nbPlacesElectriques, nbPlacesNonElectriques,
+                 nbVlauvesElectriques, nbVlauvesNonElectriques, numReseau):
+        self.numStation = numStation
         self.nom = nom
         self.coordonneesGPS = coordonneesGPS
-        self.nom_rue = nom_rue
-        self.numero_rue = numero_rue
-        self.adresse = f"{numero_rue} {nom_rue}"
-        self.capacite_totale = capacite_totale
-        self.nb_places_electriques = nb_places_electriques
-        self.nb_places_non_electriques = nb_places_non_electriques
-        self.nb_vlauves_electriques = nb_vlauves_electriques
-        self.nb_vlauves_non_electriques = nb_vlauves_non_electriques
-        self.vlauvesDispo = []          
+        self.nomRue = nomRue
+        self.numeroRue = numeroRue
+        self.adresse = f"{numeroRue} {nomRue}"
+        self.nbPlacesTotales = nbPlacesTotales
+        self.nbPlacesElectriques = nbPlacesElectriques
+        self.nbPlacesNonElectriques = nbPlacesNonElectriques
+        self.nbVlauvesElectriques = nbVlauvesElectriques
+        self.nbVlauvesNonElectriques = nbVlauvesNonElectriques
+        self.vlauvesDispo = []
+        self.numReseau = numReseau  # clé étrangère vers Reseau      
         
     def __str__(self):
-        return f"{self.num_station},{self.nom},{self.adresse},{self.capacite_totale},{self.Reseau}"
+        return f"Station #{self.numStation} - {self.nom} ({self.adresse}) - Total places : {self.nbPlacesTotales} - Réseau : {self.numReseau}"
     
     def ajouter_vlauve(self,v):
         self.vlauvesDispo.append(v)
     
     def afficher_vlauves_disponibles(self):
-        print([str(v) for v in self.vlauvesDispo])
+        return [v for v in self.vlauvesDispo]
     
     def louer_vlauve(self,v):
         self.vlauvesDispo.remove(v)
@@ -37,7 +38,7 @@ class Station :
         compteurElectrique = 0
         compteurNElectrique = 0
         for v in self.vlauvesDispo:
-            if v.electrique:
+            if v.discriminant == "vlauveElectrique":
                 compteurElectrique += 1
             else:
                 compteurNElectrique += 1

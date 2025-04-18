@@ -2,17 +2,17 @@ import csv
 
 class Reseau :
     data = []
-    def __init__(self,num_reseau,nom_reseau,annee_mise_en_place, nomVille, code_postal):
-        self.num_reseau = num_reseau
-        self.nom_reseau = nom_reseau
-        self.annee_mise_en_place = annee_mise_en_place
+    def __init__(self,numReseau,nomReseau,anneeMiseEnPlace, nomVille, codePostal):
+        self.numReseau = numReseau
+        self.nomReseau = nomReseau
+        self.anneeMiseEnPlace = anneeMiseEnPlace
         self.nomVille = nomVille
-        self.code_postal = code_postal
+        self.codePostal = codePostal
         self.stations=[]
         Reseau.data.append([self.num_reseau,self.nom_reseau,self.annee_mise_en_place,self.nomVille,self.code_postal])
         
     def __str__(self):
-        return f"{self.num_reseau},{self.nom_reseau},{self.annee_mise_en_place},{self.nomVille},{self.code_postal}"
+        return f"Réseau #{self.numReseau} - {self.nomReseau} ({self.nomVille}, {self.codePostal}) - Mis en place en {self.anneeMiseEnPlace}"
     
     def ajouterStation(self,s):
         self.stations.append(s)
