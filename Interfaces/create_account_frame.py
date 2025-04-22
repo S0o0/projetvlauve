@@ -1,6 +1,6 @@
 from tkinter import messagebox
 from tkinter import ttk
-from Composants.utilisateur import Utilisateur
+from Composants.vlauveur import Vlauveur
 
 class CreateAccountFrame(ttk.Frame):
     def __init__(self, parent, controller,utilisateurs):
@@ -65,7 +65,7 @@ class CreateAccountFrame(ttk.Frame):
                 messagebox.showerror("Erreur", "Ce nom d'utilisateur existe déjà.")
                 return
 
-        nouveau = Utilisateur(nom, prenom, mot_de_passe, email, tel, adresse, typeAbo)
+        nouveau = Vlauveur(nom, prenom, mot_de_passe, email, tel, adresse, typeAbo)
         self.utilisateurs.append(nouveau)
         messagebox.showinfo("Succès", "Compte créé avec succès !")
         self.controller.afficher_login()

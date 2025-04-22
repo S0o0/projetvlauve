@@ -1,4 +1,4 @@
-import trajet
+from Composants.trajet import Trajet
 class Vlauveur:
     def __init__(self, numVlauveur,email,  motDePasse, nom, prenom, tel, numAdresse,
     nomRue,codePostal, nomVille, typeAbo):

@@ -1,5 +1,5 @@
 import tkinter as tk
-from Composants.utilisateur import Utilisateur
+from Composants.vlauveur import Vlauveur
 from Interfaces.app_controller import AppController
 
 def centrer_fenetre(fenetre, largeur, hauteur):
@@ -20,7 +20,7 @@ if __name__ == "__main__":
         # Utilisateur("admin", "admin123"),
         # Utilisateur("alice", "motdepasse"),
         # Utilisateur("bob", "azerty")
-        Utilisateur("DJELASSI","Lenny","1234","aze@gmail.com","+3379216372","8 rue du Moulin","Mensuel")
+        Vlauveur(1,"aze@gmail.com","1234","DJELASSI","Lenny","+3379216372","8","rue du Moulin","54000","Nancy","Mensuel")
     ]
 
     # Création de la fenêtre principale
