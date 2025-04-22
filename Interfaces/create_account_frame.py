@@ -1,71 +1,82 @@
-from tkinter import messagebox
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from Composants.vlauveur import Vlauveur
 
 class CreateAccountFrame(ttk.Frame):
-    def __init__(self, parent, controller,utilisateurs):
+    def __init__(self, parent, controller):
         super().__init__(parent)
-        
-        
-        root = tk.Tk()
-        root.title("Application de Connexion")
-        centrer_fenetre(root, 300, 250)
-        
         self.controller = controller
-        self.utilisateurs = utilisateurs
 
-        ttk.Label(self, text="Créer un compte").pack(pady=10)
-        
-        ttk.Label(self, text="Nom").pack()
-        self.lastname_entry = ttk.Entry(self)
-        self.lastname_entry.pack()
-        
+        ttk.Label(self, text="Créer un compte", font=("Arial", 14)).pack(pady=10)
+
+        # Champs de saisie
         ttk.Label(self, text="Prénom").pack()
-        self.firstname_entry = ttk.Entry(self)
-        self.firstname_entry.pack()
-        
+        self.entry_prenom = ttk.Entry(self)
+        self.entry_prenom.pack()
+
+        ttk.Label(self, text="Nom").pack()
+        self.entry_nom = ttk.Entry(self)
+        self.entry_nom.pack()
+
         ttk.Label(self, text="Email").pack()
-        self.email_entry = ttk.Entry(self)
-        self.email_entry.pack()
-        
-        ttk.Label(self, text="Numéro de téléphone").pack()
-        self.tel_entry = ttk.Entry(self)
-        self.tel_entry.pack()
-        
-        ttk.Label(self, text="Adresse").pack()
-        self.adresse_entry = ttk.Entry(self)
-        self.adresse_entry.pack()
-        
+        self.entry_email = ttk.Entry(self)
+        self.entry_email.pack()
+
+        ttk.Label(self, text="Mot de passe").pack()
+        self.entry_mdp = ttk.Entry(self, show="*")
+        self.entry_mdp.pack()
+
+        ttk.Label(self, text="Téléphone").pack()
+        self.entry_tel = ttk.Entry(self)
+        self.entry_tel.pack()
+
+        ttk.Label(self, text="Numéro de rue").pack()
+        self.entry_num_adresse = ttk.Entry(self)
+        self.entry_num_adresse.pack()
+
+        ttk.Label(self, text="Nom de rue").pack()
+        self.entry_nom_rue = ttk.Entry(self)
+        self.entry_nom_rue.pack()
+
+        ttk.Label(self, text="Code postal").pack()
+        self.entry_code_postal = ttk.Entry(self)
+        self.entry_code_postal.pack()
+
+        ttk.Label(self, text="Ville").pack()
+        self.entry_ville = ttk.Entry(self)
+        self.entry_ville.pack()
+
         ttk.Label(self, text="Type d'abonnement").pack()
-        self.typeAbo_entry = ttk.Entry(self)
-        self.typeAbo_entry.pack()
+        self.entry_type_abo = ttk.Entry(self)
+        self.entry_type_abo.pack()
 
-        ttk.Label(self, text="Mot de passe").pack(pady=5)
-        self.password_entry = ttk.Entry(self, show='*')
-        self.password_entry.pack()
-
-        ttk.Button(self, text="Créer", command=self.create_account).pack(pady=10)
+        # Boutons
+        ttk.Button(self, text="Créer le compte", command=self.creer_compte).pack(pady=10)
         ttk.Button(self, text="Retour", command=self.controller.afficher_login).pack()
 
-    def create_account(self):
-        nom = self.lastname_entry.get()
-        prenom = self.firstname_entry.get()
-        email = self.email_entry.get()
-        tel = self.tel_entry.get()
-        adresse = self.adresse_entry.get()
-        typeAbo = self.typeAbo_entry.get()
-        mot_de_passe = self.password_entry.get()        
-
-        if not nom or not prenom or not email or not tel or not adresse or not typeAbo or not mot_de_passe:
-            messagebox.showwarning("Attention", "Tous les champs sont obligatoires.")
+    def creer_compte(self):
+        # Vérification simple des champs
+        if self.entry_email.get() == "" or self.entry_mdp.get() == "":
+            messagebox.showwarning("Erreur", "Email et mot de passe sont obligatoires.")
             return
 
-        for utilisateur in self.utilisateurs:
-            if utilisateur.email == email:
-                messagebox.showerror("Erreur", "Ce nom d'utilisateur existe déjà.")
-                return
+        # Génération de l’ID utilisateur
+        num = len(self.controller.utilisateurs) + 1
 
-        nouveau = Vlauveur(nom, prenom, mot_de_passe, email, tel, adresse, typeAbo)
-        self.utilisateurs.append(nouveau)
+        # Création du vlauveur
+        v = Vlauveur(
+            num,
+            self.entry_email.get(),
+            self.entry_mdp.get(),
+            self.entry_nom.get(),
+            self.entry_prenom.get(),
+            self.entry_tel.get(),
+            int(self.entry_num_adresse.get()),
+            self.entry_nom_rue.get(),
+            int(self.entry_code_postal.get()),
+            self.entry_ville.get(),
+            self.entry_type_abo.get()
+        )
+
+        self.controller.ajouter_utilisateur(v)
         messagebox.showinfo("Succès", "Compte créé avec succès !")
-        self.controller.afficher_login()
+        self.controller.connecter_utilisateur(v)
