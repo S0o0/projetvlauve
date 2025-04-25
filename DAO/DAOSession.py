@@ -1,5 +1,9 @@
 import mysql.connector
 from mysql.connector import Error 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 class DAOSession:
     
     # Propriétés statiques
@@ -7,6 +11,10 @@ class DAOSession:
     LOGIN = "root"
     MDP = ""
     DB="projetVlauve"
+<<<<<<< HEAD
+=======
+    PORT = 3306
+>>>>>>> main
     connection = None
 
     @staticmethod
@@ -16,7 +24,12 @@ class DAOSession:
                 host=DAOSession.HOST,
                 user=DAOSession.LOGIN,
                 password=DAOSession.MDP,
+<<<<<<< HEAD
                 database=DAOSession.DB
+=======
+                database=DAOSession.DB,
+                port=DAOSession.PORT
+>>>>>>> main
             )
             if DAOSession.connection.is_connected():
                 print("Connexion à la base de données réussie")
@@ -39,4 +52,14 @@ class DAOSession:
         DAOSession.get_connexion().commit()
         DAOSession.get_connexion().close()
         DAOSession.connection = None
+<<<<<<< HEAD
         print("Fermeture de la connexion à la base de données")
+=======
+        print("Fermeture de la connexion à la base de données")
+
+
+    
+
+
+
+>>>>>>> main

@@ -14,7 +14,35 @@ def centrer_fenetre(fenetre, largeur, hauteur):
     # Appliquer la taille + position
     fenetre.geometry(f"{largeur}x{hauteur}+{x}+{y}")
 
+def main():
+
+
+    from DAO.DAOSession import DAOSession
+
+    # Ouvrir la session DAO
+    DAOSession.open()
+
+    DAOSession.close()
+
 if __name__ == "__main__":
+<<<<<<< HEAD
+=======
+    main()
+    # 🧪 Utilisateur de test avec quelques trajets
+    utilisateur_test = Vlauveur(
+        numVlauveur=1,
+        email="test@vlauve.fr",
+        motDePasse="1234",
+        nom="Durand",
+        prenom="Claire",
+        tel="+33612345678",
+        numAdresse=10,
+        nomRue="Rue de l'Exemple",
+        codePostal=54000,
+        nomVille="Nancy",
+        typeAbo="annuel"
+    )
+>>>>>>> main
     # Création des utilisateurs 
     utilisateurs = [
         # Utilisateur("admin", "admin123"),
