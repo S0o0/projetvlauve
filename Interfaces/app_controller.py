@@ -8,13 +8,13 @@ class AppController:
         self.root = root
         self.root.title("Projet Vlauve")
 
-        self.utilisateurs = []              # ✅ liste de tous les vlauveurs enregistrés
-        self.utilisateur_connecte = None    # ✅ vlauveur actuellement connecté
+        self.utilisateurs = []              # liste de tous les vlauveurs enregistrés
+        self.utilisateur_connecte = None    # vlauveur actuellement connecté
 
         self.frame_actuelle = None          # pour changer dynamiquement d’écran
         self.afficher_login()               # on démarre par l'écran de connexion
 
-    # 🟦 Méthode pour afficher l’écran de connexion
+    # Méthode pour afficher l’écran de connexion
     def afficher_login(self):
         self._changer_frame(LoginFrame)
 
