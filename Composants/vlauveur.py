@@ -1,5 +1,8 @@
 from Composants.trajet import Trajet
+import DAO.DAOVlauveur import DAOVlauveur
+
 class Vlauveur:
+    leDAOVlauveur = DAOVlauveur.get_instance()
     def __init__(self, numVlauveur,email,  motDePasse, nom, prenom, tel, numAdresse,
     nomRue,codePostal, nomVille, typeAbo):
         self.numVlauveur = numVlauveur
