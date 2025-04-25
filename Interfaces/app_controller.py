@@ -18,26 +18,26 @@ class AppController:
     def afficher_login(self):
         self._changer_frame(LoginFrame)
 
-    # 🟨 Méthode pour afficher la page de création de compte
+    # Méthode pour afficher la page de création de compte
     def afficher_creation_compte(self):
         self._changer_frame(CreateAccountFrame)
 
-    # 🟩 Méthode pour afficher la page d’accueil une fois connecté
+    # Méthode pour afficher la page d’accueil une fois connecté
     def afficher_accueil(self):
         self._changer_frame(AccueilFrame)
 
-    # 🔄 Méthode centrale pour changer de frame
+    # Méthode centrale pour changer de frame
     def _changer_frame(self, FrameClass):
         if self.frame_actuelle:
             self.frame_actuelle.destroy()
         self.frame_actuelle = FrameClass(self.root, self)
         self.frame_actuelle.pack()
 
-    # ➕ Ajouter un nouvel utilisateur à la liste
+    # Ajouter un nouvel utilisateur à la liste
     def ajouter_utilisateur(self, vlauveur):
         self.utilisateurs.append(vlauveur)
 
-    # 🔓 Enregistrer l’utilisateur connecté
+    # Enregistrer l’utilisateur connecté
     def connecter_utilisateur(self, vlauveur):
         self.utilisateur_connecte = vlauveur
         self.afficher_accueil()
