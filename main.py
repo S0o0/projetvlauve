@@ -15,8 +15,7 @@ def centrer_fenetre(fenetre, largeur, hauteur):
     fenetre.geometry(f"{largeur}x{hauteur}+{x}+{y}")
 
 def main():
-
-
+    
     from DAO.DAOSession import DAOSession
 
     # Ouvrir la session DAO
@@ -25,8 +24,6 @@ def main():
     DAOSession.close()
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-=======
     main()
     # 🧪 Utilisateur de test avec quelques trajets
     utilisateur_test = Vlauveur(
@@ -42,20 +39,13 @@ if __name__ == "__main__":
         nomVille="Nancy",
         typeAbo="annuel"
     )
->>>>>>> main
-    # Création des utilisateurs 
-    utilisateurs = [
-        # Utilisateur("admin", "admin123"),
-        # Utilisateur("alice", "motdepasse"),
-        # Utilisateur("bob", "azerty")
-        Vlauveur(1,"aze@gmail.com","1234","DJELASSI","Lenny","+3379216372","8","rue du Moulin","54000","Nancy","Mensuel")
-    ]
+   
 
     # Création de la fenêtre principale
     root = tk.Tk()
     root.title("Application de Connexion")
     centrer_fenetre(root, 300, 250)
 
-    app = AppController(root,utilisateurs)
+    app = AppController(root)
 
     root.mainloop()

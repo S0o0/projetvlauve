@@ -45,7 +45,7 @@ class CreateAccountFrame(ttk.Frame):
         self.entry_ville = ttk.Entry(self)
         self.entry_ville.pack()
 
-        ttk.Label(self, text="Type d'abonnement").pack()
+        ttk.Label(self, text="Type d'abonnement (occasionnel ou annuel)").pack()
         self.entry_type_abo = ttk.Entry(self)
         self.entry_type_abo.pack()
 
@@ -78,5 +78,6 @@ class CreateAccountFrame(ttk.Frame):
         )
 
         self.controller.ajouter_utilisateur(v)
+        v.leDAOVlauveur.insert_vlauveur(v)
         messagebox.showinfo("Succès", "Compte créé avec succès !")
         self.controller.connecter_utilisateur(v)

@@ -1,7 +1,5 @@
 from mysql.connector import Error
 from DAO.DAOSession import DAOSession
-from Composants.trajet import Trajet
-from domaine.Vlauveur import Vlauveur
 
 class DAOVlauveur:
     unique_instance = None
@@ -13,25 +11,69 @@ class DAOVlauveur:
         return DAOVlauveur.unique_instance
 
     def insert_vlauveur(self, vlauveur):
-        sql = """
-            INSERT INTO Vlauveur (numVlauveur, email, motDePasse, nom, prenom, telephone,
-                                  numAdresse, nomRue, codePostal, nomVille, numAbo, numFacture)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        valeurs = (
-            vlauveur.numVlauveur, vlauveur.email, vlauveur.motDePasse,
-            vlauveur.nom, vlauveur.prenom, vlauveur.tel,
-            vlauveur.numAdresse, vlauveur.nomRue,
-            vlauveur.codePostal, vlauveur.nomVille,
-            vlauveur.typeAbo, None  # numFacture = None à l'insertion
-        )
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
-            cursor.execute(sql, valeurs)
+
+            # 1. Insérer le Vlauveur sans spécifier numVlauveur
+            sql_vlauveur = """
+                INSERT INTO Vlauveur (email, motDePasse, nom, prenom, telephone,
+                                    numAdresse, nomRue, codePostal, nomVille, numAbo, numFacture)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NULL, NULL)
+            """
+            valeurs_vlauveur = (
+                vlauveur.email,
+                vlauveur.motDePasse,
+                vlauveur.nom,
+                vlauveur.prenom,
+                vlauveur.tel,
+                vlauveur.numAdresse,
+                vlauveur.nomRue,
+                vlauveur.codePostal,
+                vlauveur.nomVille
+            )
+            cursor.execute(sql_vlauveur, valeurs_vlauveur)
             connection.commit()
-            return cursor.lastrowid
+
+            # Récupérer l'ID nouvellement créé
+            numVlauveur = cursor.lastrowid
+            vlauveur.numVlauveur = numVlauveur  # on le met aussi à jour dans ton objet Python
+
+            # 2. Créer un nouvel abonnement
+            cursor.execute("SELECT MAX(numAbo) FROM Abonnement")
+            result = cursor.fetchone()
+            num_abo = (result[0] or 0) + 1
+
+            cursor.execute(
+                "INSERT INTO Abonnement (numAbo, refVlauveur) VALUES (%s, %s)",
+                (num_abo, numVlauveur)
+            )
+
+            if vlauveur.typeAbo.lower() == "mensuel":
+                cursor.execute(
+                    "INSERT INTO AbonnementAnnuel (numAbo, typeAbonnement) VALUES (%s, %s)",
+                    (num_abo, "classique")  # ou "tarifReduit"
+                )
+            elif vlauveur.typeAbo.lower() == "occasionnel":
+                cursor.execute(
+                    "INSERT INTO AbonnementOccasionnel (numAbo, duree) VALUES (%s, %s)",
+                    (num_abo, "1j")  # ou "7j"
+                )
+            else:
+                raise ValueError("Type d'abonnement invalide.")
+
+            # 3. Mise à jour du numAbo dans le Vlauveur
+            cursor.execute(
+                "UPDATE Vlauveur SET numAbo = %s WHERE numVlauveur = %s",
+                (num_abo, numVlauveur)
+            )
+
+            connection.commit()
+            print("Vlauveur et abonnement insérés et liés avec succès.")
+            return numVlauveur
+
         except Error as e:
+            print("\n<--------------------------------------->")
             print(f"Erreur lors de l'insertion du vlauveur : {e}")
             connection.rollback()
             return -1
@@ -39,17 +81,23 @@ class DAOVlauveur:
             if cursor:
                 cursor.close()
 
-    def delete_vlauveur(self, numVlauveur):
+
+
+    def delete_vlauveur(self, vlauveur):
         sql = "DELETE FROM Vlauveur WHERE numVlauveur = %s"
+        valeurs = (vlauveur.get_numVlauveur(),)
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
-            cursor.execute(sql, (numVlauveur,))
-            connection.commit()
+            cursor.execute(sql, valeurs)
             return True
         except Error as e:
-            print(f"Erreur lors de la suppression du vlauveur : {e}")
-            connection.rollback()
+            print("\n<--------------------------------------->")
+            print(f"Erreur lors de la suppression de vlauveur : {e}")
+            print(sql)
+            print(valeurs)
+            print("rollback")
+            connection.rollback() 
             return False
         finally:
             if cursor:

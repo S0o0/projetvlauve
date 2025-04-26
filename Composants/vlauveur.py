@@ -1,8 +1,9 @@
 from Composants.trajet import Trajet
-import DAO.DAOVlauveur import DAOVlauveur
+from DAO.DAOVlauveur import DAOVlauveur
 
 class Vlauveur:
     leDAOVlauveur = DAOVlauveur.get_instance()
+    
     def __init__(self, numVlauveur,email,  motDePasse, nom, prenom, tel, numAdresse,
     nomRue,codePostal, nomVille, typeAbo):
         self.numVlauveur = numVlauveur
@@ -19,6 +20,79 @@ class Vlauveur:
         self.typeAbo = typeAbo
         self.factures = []
         self.trajets = []  # ✅ nouvelle liste de trajets
+
+    def get_numVlauveur(self):
+        return self.numVlauveur
+
+    def set_numVlauveur(self, numVlauveur):
+        self.numVlauveur = numVlauveur
+
+    def get_email(self):
+        return self.email
+
+    def set_email(self, email):
+        self.email = email
+
+    def get_motDePasse(self):
+        return self.motDePasse
+
+    def set_motDePasse(self, motDePasse):
+        self.motDePasse = motDePasse
+
+    def get_nom(self):
+        return self.nom
+
+    def set_nom(self, nom):
+        self.nom = nom
+
+    def get_prenom(self):
+        return self.prenom
+
+    def set_prenom(self, prenom):
+        self.prenom = prenom
+
+    def get_tel(self):
+        return self.tel
+
+    def set_tel(self, tel):
+        self.tel = tel
+
+    def get_numAdresse(self):
+        return self.numAdresse
+
+    def set_numAdresse(self, numAdresse):
+        self.numAdresse = numAdresse
+        self._update_adresse()
+
+    def get_nomRue(self):
+        return self.nomRue
+
+    def set_nomRue(self, nomRue):
+        self.nomRue = nomRue
+        self._update_adresse()
+
+    def get_codePostal(self):
+        return self.codePostal
+
+    def set_codePostal(self, codePostal):
+        self.codePostal = codePostal
+        self._update_adresse()
+
+    def get_nomVille(self):
+        return self.nomVille
+
+    def set_nomVille(self, nomVille):
+        self.nomVille = nomVille
+        self._update_adresse()
+
+    def get_typeAbo(self):
+        return self.typeAbo
+
+    def set_typeAbo(self, typeAbo):
+        self.typeAbo = typeAbo
+
+    def get_factures(self):
+        return self.factures
 
     def ajouter_trajet(self, trajet):
         self.trajets.append(trajet)

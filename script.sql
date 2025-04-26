@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS  AbonnementOccasionnel(
 );
 
 CREATE TABLE IF NOT EXISTS Vlauveur(
-    numVlauveur INT,
+    numVlauveur INT AUTO_INCREMENT,
     email VARCHAR(50),
     motDePasse VARCHAR(50),
     nom VARCHAR(30),
