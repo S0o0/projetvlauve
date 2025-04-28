@@ -49,7 +49,7 @@ class DAOVlauveur:
                 (num_abo, numVlauveur)
             )
 
-            if vlauveur.typeAbo.lower() == "mensuel":
+            if vlauveur.typeAbo.lower() == "annuel":
                 cursor.execute(
                     "INSERT INTO AbonnementAnnuel (numAbo, typeAbonnement) VALUES (%s, %s)",
                     (num_abo, "classique")  # ou "tarifReduit"

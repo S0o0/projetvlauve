@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS Paiement(
 
 
 CREATE TABLE IF NOT EXISTS Trajet(
-    ref INT,
+    ref INT AUTO_INCREMENT,
     stationDepart INT NOT NULL,
     stationArrivee INT NOT NULL,
     nbKmParcouru DECIMAL(10,2),
