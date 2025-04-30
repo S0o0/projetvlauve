@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS Vlauve(
 -- );
 
 CREATE TABLE IF NOT EXISTS Facture(
-    numero INT,
+    numero INT AUTO_INCREMENT,
     dateFacture DATE,
     montantTotal DECIMAL(10,2),
     refAbo INT NOT NULL,
