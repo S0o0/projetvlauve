@@ -13,14 +13,17 @@ class DAOVlauveur:
         return DAOVlauveur.unique_instance
 
     def insert_vlauveur(self, vlauveur):
+        cursor = None
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
-            
-            salt = secrets.token_hex(16)
-            hash_mdp = hashlib.sha256((vlauveur.motDePasse + salt).encode()).hexdigest()
-            mot_de_passe_hashe = f"{hash_mdp}/{salt}"
-            
+
+            # on hash le mdp que si il n'est pas déja hashé
+            if '/' not in vlauveur.motDePasse:
+                salt = secrets.token_hex(16)
+                hash_mdp = hashlib.sha256((vlauveur.motDePasse + salt).encode()).hexdigest()
+                vlauveur.motDePasse = f"{hash_mdp}/{salt}"
+
             # 1. Insérer le Vlauveur sans spécifier numVlauveur
             sql_vlauveur = """
                 INSERT INTO Vlauveur (email, motDePasse, nom, prenom, telephone,
@@ -29,7 +32,7 @@ class DAOVlauveur:
             """
             valeurs_vlauveur = (
                 vlauveur.email,
-                mot_de_passe_hashe,
+                vlauveur.motDePasse,
                 vlauveur.nom,
                 vlauveur.prenom,
                 vlauveur.tel,
@@ -75,7 +78,6 @@ class DAOVlauveur:
             )
 
             connection.commit()
-            print("Vlauveur et abonnement insérés et liés avec succès.")
             return numVlauveur
 
         except Error as e:
@@ -84,7 +86,6 @@ class DAOVlauveur:
             connection.rollback()
             return -1
         finally:
-            print("Insertion dans la base du mot de passe :", vlauveur.motDePasse)
             if cursor:
                 cursor.close()
 
@@ -163,31 +164,22 @@ class DAOVlauveur:
                 cursor.execute(sql, (email,))
                 result = cursor.fetchone()
             if result:
-                print(f"Mot de passe récupéré de la base: {result['motDePasse']}")
                 try:
                     stored_hash, stored_salt = result["motDePasse"].split("/")
-                    print(f"Hash: {stored_hash}, Salt: {stored_salt}")
                 except ValueError:
-                    print("Format de mot de passe invalide.")
                     return None
 
                 hash_mdp = hashlib.sha256((motDePasse + stored_salt).encode()).hexdigest()
-                print(f"Hash calculé pour la vérification : {hash_mdp}")
-                print(f"Hash attendu depuis la base : {stored_hash}")
                 if hash_mdp == stored_hash:
                     return self.set_all_values(result)  # L'utilisateur est authentifié
                 else:
-                    print("Mot de passe incorrect.")
                     return None
             else:
-                print("Aucun utilisateur trouvé avec cet email.")
                 return None
         except Error as e:
             print(f"Erreur lors de la vérification des identifiants : {e}")
             return None
-        finally:
-            if cursor:
-                cursor.close()
+
 
 
 
