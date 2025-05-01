@@ -16,31 +16,36 @@ def centrer_fenetre(fenetre, largeur, hauteur):
     # Appliquer la taille + position
     fenetre.geometry(f"{largeur}x{hauteur}+{x}+{y}")
 
-def main():
-    
-    from DAO.DAOSession import DAOSession
-
-    # Ouvrir la session DAO
-    DAOSession.open()
-
-    # dao = DAOVlauveur()
-    # email = "test@gmail.com"
-    # mot_de_passe = "azerty"  # mot de passe en clair utilisé à l'inscription
-
-    # print(f"Essai de connexion avec l'email: {email} et le mot de passe: {mot_de_passe}")
-    # vlauveur = dao.find_by_credentials(email, mot_de_passe)
-
-    # if vlauveur:
-    #     print("Connexion réussie :", vlauveur.nom, vlauveur.prenom)
-    # else:
-    #     print("Adresse mail ou mot de passe incorrect.")
-    
-    DAOSession.close()
-
 if __name__ == "__main__":
-    main()
-   
-   
+    # 🧪 Utilisateur de test avec quelques trajets
+    utilisateur_test = Vlauveur(
+        numVlauveur=1,
+        email="test@vlauve.fr",
+        motDePasse="1234",
+        nom="Durand",
+        prenom="Claire",
+        tel="+33612345678",
+        numAdresse=10,
+        nomRue="Rue de l'Exemple",
+        codePostal=54000,
+        nomVille="Nancy",
+        typeAbo="annuel"
+    )
+    # Création des utilisateurs 
+    utilisateurs = [
+        # Utilisateur("admin", "admin123"),
+        # Utilisateur("alice", "motdepasse"),
+        # Utilisateur("bob", "azerty")
+        Vlauveur(1,"aze@gmail.com","1234","DJELASSI","Lenny","+3379216372","8","rue du Moulin","54000","Nancy","Mensuel")
+    ]
+
+    # Simulation : ajout de trajets pour tester l'affichage
+    from Composants.trajet import Trajet
+    t1 = Trajet(1, 2, 3, 4.5, "2024-04-01", "2024-04-01", "08:00", "08:50", 1)
+    t2 = Trajet(2, 3, 2, 2.0, "2024-04-02", "2024-04-02", "09:00", "09:20", 1)
+
+    utilisateur_test.trajets.append(t1)
+    utilisateur_test.trajets.append(t2)
 
     # Création de la fenêtre principale
     root = tk.Tk()

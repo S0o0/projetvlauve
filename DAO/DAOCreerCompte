@@ -1,0 +1,11 @@
+from mysql.connector import Error
+from DAO.DAOSession import DAOSession
+
+class DAOCreerCompte:
+    unique_instance = None
+
+    @staticmethod
+    def get_instance():
+        if DAOCreerCompte.unique_instance is None:
+            DAOCreerCompte.unique_instance = DAOABu()
+        return DAOCreerCompte.unique_instance
