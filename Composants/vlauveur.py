@@ -15,7 +15,7 @@ class Vlauveur:
         self.adresse = f"{numAdresse} {nomRue} {nomVille} {codePostal}"
         self.typeAbo = typeAbo
         self.factures = []
-        self.trajets = []  # ✅ nouvelle liste de trajets
+        self.trajets = []  # nouvelle liste de trajets
 
     def ajouter_trajet(self, trajet):
         self.trajets.append(trajet)
@@ -65,3 +65,87 @@ class Vlauveur:
             print(f"Facture #{numero_facture} générée : {total}€")
         else:
             print("Aucune facturation ce mois-ci.")
+
+    def get_numVlauveur(self):
+        return self.numVlauveur
+
+    def set_numVlauveur(self, numVlauveur):
+        self.numVlauveur = numVlauveur
+
+    def get_email(self):
+        return self.email
+
+    def set_email(self, email):
+        self.email = email
+
+    def get_motDePasse(self):
+        return self.motDePasse
+
+    def set_motDePasse(self, motDePasse):
+        self.motDePasse = motDePasse
+
+    def get_nom(self):
+        return self.nom
+
+    def set_nom(self, nom):
+        self.nom = nom
+
+    def get_prenom(self):
+        return self.prenom
+
+    def set_prenom(self, prenom):
+        self.prenom = prenom
+
+    def get_tel(self):
+        return self.tel
+
+    def set_tel(self, tel):
+        self.tel = tel
+
+    def get_numAdresse(self):
+        return self.numAdresse
+
+    def set_numAdresse(self, numAdresse):
+        self.numAdresse = numAdresse
+
+    def get_nomRue(self):
+        return self.nomRue
+
+    def set_nomRue(self, nomRue):
+        self.nomRue = nomRue
+
+    def get_codePostal(self):
+        return self.codePostal
+
+    def set_codePostal(self, codePostal):
+        self.codePostal = codePostal
+
+    def get_nomVille(self):
+        return self.nomVille
+
+    def set_nomVille(self, nomVille):
+        self.nomVille = nomVille
+
+    def get_adresse(self):
+        return self.adresse
+
+    def set_adresse(self, adresse):
+        self.adresse = adresse
+
+    def get_typeAbo(self):
+        return self.typeAbo
+
+    def set_typeAbo(self, typeAbo):
+        self.typeAbo = typeAbo
+
+    def get_factures(self):
+        return self.factures
+
+    def set_factures(self, factures):
+        self.factures = factures
+
+    def get_trajets(self):
+        return self.trajets
+
+    def set_trajets(self, trajets):
+        self.trajets = trajets
