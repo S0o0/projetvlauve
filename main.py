@@ -1,6 +1,8 @@
 import tkinter as tk
 from Composants.vlauveur import Vlauveur
 from Interfaces.app_controller import AppController
+from DAO.DAOSession import DAOSession
+from DAO.DAOVlauveur import DAOVlauveur
 
 def centrer_fenetre(fenetre, largeur, hauteur):
     # Obtenir la taille de l'écran
@@ -21,24 +23,23 @@ def main():
     # Ouvrir la session DAO
     DAOSession.open()
 
+    # dao = DAOVlauveur()
+    # email = "test@gmail.com"
+    # mot_de_passe = "azerty"  # mot de passe en clair utilisé à l'inscription
+
+    # print(f"Essai de connexion avec l'email: {email} et le mot de passe: {mot_de_passe}")
+    # vlauveur = dao.find_by_credentials(email, mot_de_passe)
+
+    # if vlauveur:
+    #     print("Connexion réussie :", vlauveur.nom, vlauveur.prenom)
+    # else:
+    #     print("Adresse mail ou mot de passe incorrect.")
+    
     DAOSession.close()
 
 if __name__ == "__main__":
     main()
-    # 🧪 Utilisateur de test avec quelques trajets
-    utilisateur_test = Vlauveur(
-        numVlauveur=1,
-        email="test@vlauve.fr",
-        motDePasse="1234",
-        nom="Durand",
-        prenom="Claire",
-        tel="+33612345678",
-        numAdresse=10,
-        nomRue="Rue de l'Exemple",
-        codePostal=54000,
-        nomVille="Nancy",
-        typeAbo="annuel"
-    )
+   
    
 
     # Création de la fenêtre principale

@@ -1,5 +1,7 @@
 from tkinter import ttk, messagebox
 from Composants.vlauveur import Vlauveur
+import hashlib
+import secrets
 
 class CreateAccountFrame(ttk.Frame):
     def __init__(self, parent, controller):
@@ -61,12 +63,21 @@ class CreateAccountFrame(ttk.Frame):
 
         # Génération de l’ID utilisateur
         num = len(self.controller.utilisateurs) + 1
+        
+        # Récupération du mot de passe et génération du salt
+        mdp = self.entry_mdp.get()
+        salt = secrets.token_hex(16)
+        mdp_salte = mdp + salt
+        hash_mdp = hashlib.sha256(mdp_salte.encode()).hexdigest()
+        hash_final = f"{hash_mdp}/{salt}"
+        print("Mot de passe haché à insérer :", hash_final)
 
         # Création du vlauveur
+        
         v = Vlauveur(
             num,
             self.entry_email.get(),
-            self.entry_mdp.get(),
+            hash_final,
             self.entry_nom.get(),
             self.entry_prenom.get(),
             self.entry_tel.get(),

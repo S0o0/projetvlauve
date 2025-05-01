@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS  AbonnementOccasionnel(
 CREATE TABLE IF NOT EXISTS Vlauveur(
     numVlauveur INT AUTO_INCREMENT,
     email VARCHAR(50),
-    motDePasse VARCHAR(50),
+    motDePasse VARCHAR(10000),
     nom VARCHAR(30),
     prenom VARCHAR(30),
     telephone VARCHAR(12), -- de la forme '+33620981405'
@@ -147,4 +147,3 @@ CREATE TABLE IF NOT EXISTS Trajet(
     -- refVlauve INT,
     -- FOREIGN KEY (refVlauve) REFERENCES Vlauve(ref),  
     );
-    

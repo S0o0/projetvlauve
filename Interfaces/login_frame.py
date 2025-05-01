@@ -1,5 +1,6 @@
 # Classe principale de l'interface de connexion
 from tkinter import ttk, messagebox
+from DAO.DAOVlauveur import DAOVlauveur
 
 class LoginFrame(ttk.Frame):
     def __init__(self, parent, controller):
@@ -20,11 +21,22 @@ class LoginFrame(ttk.Frame):
     def login(self):
         mail = self.mail_entry.get()
         mot_de_passe = self.password_entry.get()
+        print(f"Essai de connexion avec l'email: {mail} et le mot de passe (en clair): {mot_de_passe}")
 
-        for utilisateur in self.controller.utilisateurs:
-            if utilisateur.verifier_identifiants(mail, mot_de_passe):
-                messagebox.showinfo("Connexion réussie", f"Bienvenue {utilisateur.prenom} !")
-                self.controller.connecter_utilisateur(utilisateur)
-                return
+        print(f"Email saisi : {repr(mail)}")
+        print(f"Mot de passe saisi : {repr(mot_de_passe)}")
 
-        messagebox.showerror("Erreur", "Adresse mail ou mot de passe incorrect.")
+        
+        dao = DAOVlauveur.get_instance()
+        
+        # Utilisation de la méthode find_by_credentials pour authentifier l'utilisateur
+        utilisateur = dao.find_by_credentials(mail, mot_de_passe)
+
+        if utilisateur:
+            print(f"Utilisateur trouvé : {utilisateur.prenom} {utilisateur.nom}")
+            messagebox.showinfo("Connexion réussie", f"Bienvenue {utilisateur.prenom} !")
+            self.controller.connecter_utilisateur(utilisateur)
+        else:
+            print(f"Utilisateur avec l'email {mail} non trouvé ou mot de passe incorrect.")
+            messagebox.showerror("Erreur", "Adresse mail ou mot de passe incorrect.")
+

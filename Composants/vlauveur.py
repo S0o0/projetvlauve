@@ -1,5 +1,6 @@
 from Composants.trajet import Trajet
 from DAO.DAOVlauveur import DAOVlauveur
+import hashlib
 
 class Vlauveur:
     leDAOVlauveur = DAOVlauveur.get_instance()
@@ -110,8 +111,18 @@ class Vlauveur:
     def __str__(self):
         return f"Vlauveur #{self.numVlauveur} - {self.prenom} {self.nom} - Email : {self.email} - Abonnement #{self.typeAbo}"
 
-    def verifier_identifiants(self, email, motDePasse,):
-        return self.email == email and self.motDePasse == motDePasse
+    def verifier_identifiants(self, email, motDePasse):
+        if self.email != email:
+            return False
+
+        try:
+            hash_stocke, salt = self.motDePasse.split("/")
+        except ValueError:
+            return False
+
+        hash_test = hashlib.sha256((motDePasse + salt).encode()).hexdigest()
+        return hash_test == hash_stocke
+
 
     def generer_facture(self, mois, annee, duree_gratuite=30, tarif_demi_heure=1):
         total = 0

@@ -2,13 +2,14 @@ import tkinter as tk
 from Interfaces.login_frame import LoginFrame
 from Interfaces.create_account_frame import CreateAccountFrame
 from Interfaces.accueil_frame import AccueilFrame
+from DAO.DAOVlauveur import DAOVlauveur
 
 class AppController:
     def __init__(self, root):
         self.root = root
         self.root.title("Projet Vlauve")
 
-        self.utilisateurs = []              # liste de tous les vlauveurs enregistrés
+        self.utilisateurs = DAOVlauveur.get_instance().get_all_vlauveurs() # liste de tous les vlauveurs enregistrés
         self.utilisateur_connecte = None    # vlauveur actuellement connecté
 
         self.frame_actuelle = None          # pour changer dynamiquement d’écran
