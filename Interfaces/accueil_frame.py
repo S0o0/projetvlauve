@@ -8,11 +8,23 @@ class AccueilFrame(ttk.Frame):
 
         ttk.Label(self, text=f"Bienvenue {self.vlauveur.prenom} {self.vlauveur.nom}", font=("Arial", 14)).pack(pady=10)
 
+        ttk.Button(self, text=f"Stations disponibles", command=self.voir_stations).pack(pady=5)
         ttk.Button(self, text="Voir mes trajets", command=self.voir_trajets).pack(pady=5)
         ttk.Button(self, text="Voir mes factures", command=self.voir_factures).pack(pady=5)
         ttk.Button(self, text="Total kilomètres parcourus", command=self.km_total).pack(pady=5)
         ttk.Button(self, text="Générer une facture", command=self.facturer).pack(pady=5)
 
+    def voir_stations(self):
+        from DAO.DAOStation import DAOStation
+        stations = DAOStation.get_instance().get_all_stations()
+        
+        if not stations:
+            messagebox.showinfo("Stations", "Aucune station disponible.")
+            return
+        
+        texte = "\n\n".join(str(station) for station in stations)
+        messagebox.showinfo("Stations disponibles", texte)
+    
     def voir_trajets(self):
         if len(self.vlauveur.trajets) == 0:
             messagebox.showinfo("Mes trajets", "Aucun trajet effectué.")

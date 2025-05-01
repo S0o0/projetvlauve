@@ -1,8 +1,8 @@
-from vlauve import vlauve
+from Composants.vlauve import Vlauve
 class Station :
     
     def __init__(self, numStation, nom, coordonneesGPS, nomRue, numeroRue,
-                 nbPlacesTotales, nbPlacesElectriques, nbPlacesNonElectriques,
+                 nbPlacesTotal, nbPlacesElectriques, nbPlacesNonElectriques,
                  nbVlauvesElectriques, nbVlauvesNonElectriques, numReseau):
         self.numStation = numStation
         self.nom = nom
@@ -10,7 +10,7 @@ class Station :
         self.nomRue = nomRue
         self.numeroRue = numeroRue
         self.adresse = f"{numeroRue} {nomRue}"
-        self.nbPlacesTotales = nbPlacesTotales
+        self.nbPlacesTotal = nbPlacesTotal
         self.nbPlacesElectriques = nbPlacesElectriques
         self.nbPlacesNonElectriques = nbPlacesNonElectriques
         self.nbVlauvesElectriques = nbVlauvesElectriques
@@ -19,7 +19,7 @@ class Station :
         self.numReseau = numReseau  # clé étrangère vers Reseau      
         
     def __str__(self):
-        return f"Station #{self.numStation} - {self.nom} ({self.adresse}) - Total places : {self.nbPlacesTotales} - Réseau : {self.numReseau}"
+        return f"Station #{self.numStation} - {self.nom} ({self.adresse}) - Total places : {self.nbPlacesTotal} - Réseau : {self.numReseau}"
     
     def ajouter_vlauve(self,v):
         self.vlauvesDispo.append(v)
