@@ -39,4 +39,3 @@ class LoginFrame(ttk.Frame):
         else:
             print(f"Utilisateur avec l'email {mail} non trouvé ou mot de passe incorrect.")
             messagebox.showerror("Erreur", "Adresse mail ou mot de passe incorrect.")
-

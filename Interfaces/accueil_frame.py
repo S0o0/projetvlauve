@@ -220,13 +220,44 @@ class AccueilFrame(ttk.Frame):
             messagebox.showinfo("Succès", "Abonnement supprimé.")
             fenetre_parent.destroy()
 
-    
     def voir_trajets(self):
-        if len(self.vlauveur.trajets) == 0:
+        trajets = self.vlauveur.trajets
+        if not trajets:
             messagebox.showinfo("Mes trajets", "Aucun trajet effectué.")
-        else:
-            for trajet in self.vlauveur.trajets:
-                messagebox.showinfo("Trajet", str(trajet))
+            return
+
+        # Nouvelle fenêtre avec Treeview
+        fenetre = tk.Toplevel(self)
+        fenetre.title("Mes trajets")
+        fenetre.geometry("1200x400")
+
+        colonnes = (
+            "Réf", "Départ", "Arrivée", "Km parcourus",
+            "Date départ", "Heure départ", "Date retour", "Heure retour", "Vlauveur"
+        )
+
+        tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
+
+        for col in colonnes:
+            tableau.heading(col, text=col)
+            tableau.column(col, width=120, anchor="center")
+
+        for trajet in trajets:
+            tableau.insert("", "end", values=(
+                trajet.get_ref(),
+                trajet.get_stationDepart(),
+                trajet.get_stationArrivee(),
+                trajet.get_nbKmParcouru(),
+                trajet.get_dateArrivee(),
+                trajet.get_heureArrivee(),
+                trajet.get_dateRetour(),
+                trajet.get_heureRetour(),
+                trajet.get_refVlauveur()
+            ))
+
+        tableau.pack(expand=True, fill="both", padx=10, pady=10)
+
+
 
     def voir_factures(self):
         if len(self.vlauveur.factures) == 0:

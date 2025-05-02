@@ -32,27 +32,25 @@ class DAOStation:
             if cursor:
                 cursor.close()  # Fermer le curseur après utilisation
 
-    # def insert_station(self, une_station):
-    #     sql = "INSERT INTO Station (nom, adresse, region) VALUES (%s, %s, %s)"
-    #     valeurs = (une_station.get_nom(), une_station.get_adresse(), une_station.get_region())
-    #     try:
-    #         connection = DAOSession.get_connexion()
-    #         cursor = connection.cursor()
-    #         cursor.execute(sql, valeurs)
-    #         cle = cursor.lastrowid
-    #        # print(sql)
-    #         return cle
-    #     except Error as e:
-    #         print("\n<--------------------------------------->")
-    #         print(f"Erreur lors de la création de station : {e}")
-    #         print(sql)
-    #         print(valeurs)
-    #         print("rollback")
-    #         connection.rollback() 
-    #         return -1
-    #     finally:
-    #         if cursor:
-    #             cursor.close()
+    def insert_station(self, station):
+        sql = """
+            INSERT INTO Station (nom, adresse, capacite)
+            VALUES (%s, %s, %s)
+        """
+        valeurs = (station.nom, station.adresse, station.capacite)
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor()
+            cursor.execute(sql, valeurs)
+            connection.commit()
+            return True
+        except Error as e:
+            print(f"Erreur lors de l'insertion de la station : {e}")
+            connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()
         
 
     # def delete_station(self, une_station):

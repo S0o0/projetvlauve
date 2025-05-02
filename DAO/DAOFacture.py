@@ -1,5 +1,6 @@
 from mysql.connector import Error
 from DAO.DAOSession import DAOSession
+from Composants.facture import Facture
 
 class DAOFacture:
     unique_instance = None
@@ -146,7 +147,6 @@ class DAOFacture:
         return les_factures
 
     def set_all_values(self, rs):
-        from domaine.Facture import Facture  # Attention au bon chemin de ton import
         un_facture = Facture(
             rs["idFacture"],
             rs["stationDepart"],
@@ -159,3 +159,31 @@ class DAOFacture:
             rs["refVlauveur"]
         )
         return un_facture
+    
+        def generer_facture_mensuelle(self, refVlauveur, mois, annee):
+            try:
+                connection = DAOSession.get_connexion()
+                cursor = connection.cursor(dictionary=True)
+                sql_trajets = """
+                    SELECT nbKmParcouru FROM Trajet
+                    WHERE refVlauveur = %s AND MONTH(dateArrivee) = %s AND YEAR(dateArrivee) = %s
+                """
+                cursor.execute(sql_trajets, (refVlauveur, mois, annee))
+                trajets = cursor.fetchall()
+                total_km = sum([t['nbKmParcouru'] for t in trajets])
+                montant = total_km * 0.5  # Exemple de tarif
+
+                sql_insert_facture = """
+                    INSERT INTO Facture (refVlauveur, montant, mois, annee, statut)
+                    VALUES (%s, %s, %s, %s, 'non payee')
+                """
+                cursor.execute(sql_insert_facture, (refVlauveur, montant, mois, annee))
+                connection.commit()
+                return cursor.lastrowid
+            except Error as e:
+                print(f"Erreur lors de la génération de la facture : {e}")
+                connection.rollback()
+                return -1
+            finally:
+                if cursor:
+                    cursor.close()

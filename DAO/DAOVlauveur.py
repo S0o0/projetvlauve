@@ -185,6 +185,7 @@ class DAOVlauveur:
 
     def set_all_values(self, rs):
         from Composants.vlauveur import Vlauveur
+        from Composants.trajet import Trajet
         vlauveur = Vlauveur(
             rs["numVlauveur"], rs["email"], rs["motDePasse"],
             rs["nom"], rs["prenom"], rs["telephone"],
@@ -212,6 +213,7 @@ class DAOVlauveur:
 
     
     def get_all_vlauveurs(self):
+        from Composants.trajet import Trajet
         sql = "SELECT * FROM Vlauveur"
         try:
             connection = DAOSession.get_connexion()  # Récupérer la connexion à la base de données

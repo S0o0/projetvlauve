@@ -10,110 +10,61 @@ class DAOTrajet:
             DAOTrajet.unique_instance = DAOTrajet()
         return DAOTrajet.unique_instance
 
-    def insert_facture(self, une_facture):
+    def insert_trajet(self, trajet):
         sql = """
-            INSERT INTO Facture (dateFacture, montantTotal, refAbo)
-            VALUES (%s, %s, %s)
+            INSERT INTO Trajet (stationDepart, stationArrivee, nbKmParcouru,
+                                dateArrivee, dateRetour, heureArrivee, heureRetour, refVlauveur)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         valeurs = (
-            une_facture.get_dateFacture(),
-            une_facture.get_montantTotal(),
-            une_facture.get_refAbo()
+            trajet.stationDepart, trajet.stationArrivee, trajet.nbKmParcouru,
+            trajet.dateArrivee, trajet.dateRetour, trajet.heureArrivee, trajet.heureRetour,
+            trajet.refVlauveur
         )
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
             cursor.execute(sql, valeurs)
-            cle = cursor.lastrowid
-            return cle
-        except Error as e:
-            print(f"Erreur lors de l'insertion de la facture : {e}")
-            connection.rollback()
-            return -1
-        finally:
-            if cursor:
-                cursor.close()
-
-    def delete_facture(self, une_facture):
-        sql = "DELETE FROM Facture WHERE numero = %s"
-        valeurs = (une_facture.get_numero(),)
-        try:
-            connection = DAOSession.get_connexion()
-            cursor = connection.cursor()
-            cursor.execute(sql, valeurs)
+            connection.commit()
             return True
         except Error as e:
-            print(f"Erreur lors de la suppression de la facture : {e}")
+            print(f"Erreur lors de l'insertion du trajet : {e}")
             connection.rollback()
             return False
         finally:
             if cursor:
                 cursor.close()
 
-    def find_facture(self, numero):
-        sql = "SELECT * FROM Facture WHERE numero = %s"
-        valeurs = (numero,)
-        try:
-            connection = DAOSession.get_connexion()
-            cursor = connection.cursor(dictionary=True)
-            cursor.execute(sql, valeurs)
-            rs = cursor.fetchone()
-            if rs:
-                return self.set_all_values(rs)
-            return None
-        except Error as e:
-            print(f"Erreur lors de la recherche de la facture : {e}")
-            return None
-        finally:
-            if cursor:
-                cursor.close()
-
-    def update_facture(self, une_facture):
+    def get_trajets_by_vlauveur(self, ref_vlauveur, date_min=None, date_max=None, distance_min=None, distance_max=None):
         sql = """
-            UPDATE Facture SET dateFacture = %s, montantTotal = %s, refAbo = %s
-            WHERE numero = %s
+            SELECT stationDepart, stationArrivee, nbKmParcouru, 
+                   dateArrivee, dateRetour, heureArrivee, heureRetour
+            FROM Trajet
+            WHERE refVlauveur = %s
         """
-        valeurs = (
-            une_facture.get_dateFacture(),
-            une_facture.get_montantTotal(),
-            une_facture.get_refAbo(),
-            une_facture.get_numero()
-        )
-        try:
-            connection = DAOSession.get_connexion()
-            cursor = connection.cursor()
-            cursor.execute(sql, valeurs)
-            return True
-        except Error as e:
-            print(f"Erreur lors de la mise à jour de la facture : {e}")
-            connection.rollback()
-            return False
-        finally:
-            if cursor:
-                cursor.close()
+        valeurs = [ref_vlauveur]
 
-    def select_facture(self):
-        sql = "SELECT * FROM Facture"
-        factures = []
+        if date_min:
+            sql += " AND dateArrivee >= %s"
+            valeurs.append(date_min)
+        if date_max:
+            sql += " AND dateArrivee <= %s"
+            valeurs.append(date_max)
+        if distance_min:
+            sql += " AND nbKmParcouru >= %s"
+            valeurs.append(distance_min)
+        if distance_max:
+            sql += " AND nbKmParcouru <= %s"
+            valeurs.append(distance_max)
+
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor(dictionary=True)
-            cursor.execute(sql)
-            rs = cursor.fetchall()
-            for row in rs:
-                factures.append(self.set_all_values(row))
+            cursor.execute(sql, tuple(valeurs))
+            return cursor.fetchall()
         except Error as e:
-            print(f"Erreur lors de la récupération des factures : {e}")
+            print(f"Erreur lors de la récupération des trajets : {e}")
+            return []
         finally:
             if cursor:
                 cursor.close()
-        return factures
-
-    def set_all_values(self, rs):
-        return Facture(
-            numero=rs["numero"],
-            dateFacture=rs["dateFacture"],
-            montantTotal=rs["montantTotal"],
-            refAbo=rs["refAbo"]
-        )
-        return un_trajet
