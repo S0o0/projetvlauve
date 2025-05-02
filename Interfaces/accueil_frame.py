@@ -68,99 +68,72 @@ class AccueilFrame(ttk.Frame):
 
         if not abo:
             ttk.Label(fenetre, text="Aucun abonnement actif.").pack(pady=10)
-            return
-
-        ttk.Label(fenetre, text=f"Abonnement #{abo['numAbo']}", font=("Arial", 12)).pack(pady=5)
-        ttk.Label(fenetre, text=f"Type : {abo['type']}").pack(pady=5)
-
-        if abo["type"] == "annuel":
-            ttk.Label(fenetre, text=f"Formule : {abo['typeAbonnement']}").pack(pady=5)
-            # Tu peux ajouter ici : montant de garantie, mode de paiement, etc.
-
-        elif abo["type"] == "occasionnel":
-            ttk.Label(fenetre, text=f"Durée : {abo['duree']}").pack(pady=5)
-
         else:
-            ttk.Label(fenetre, text="Type d'abonnement non reconnu.").pack(pady=5)
+            ttk.Label(fenetre, text=f"Abonnement #{abo['numAbo']}", font=("Arial", 12)).pack(pady=5)
+            ttk.Label(fenetre, text=f"Type : {abo['type']}").pack(pady=5)
 
-        #Bouton Ajouter
-        ttk.Button(self, text="Ajouter un abonnement", command=self.ajouter_abonnement).pack(pady=5)
+            if abo["type"] == "annuel":
+                ttk.Label(fenetre, text=f"Formule : {abo['typeAbonnement']}").pack(pady=5)
+            elif abo["type"] == "occasionnel":
+                ttk.Label(fenetre, text=f"Durée : {abo['duree']}").pack(pady=5)
+            else:
+                ttk.Label(fenetre, text="Type d'abonnement non reconnu.").pack(pady=5)
+
+            ttk.Button(fenetre, text="Modifier", command=lambda: self.modifier_abonnement(abo)).pack(pady=5)
+            ttk.Button(fenetre, text="Supprimer", command=lambda: self.supprimer_abonnement(abo['numAbo'], fenetre)).pack(pady=5)
+
+        # Boutons disponibles dans tous les cas
+        ttk.Button(fenetre, text="Ajouter abonnement annuel", command=lambda: self.ajouter_abonnement("annuel")).pack(pady=5)
+        ttk.Button(fenetre, text="Ajouter abonnement occasionnel", command=lambda: self.ajouter_abonnement("occasionnel")).pack(pady=5)
         
-        # Bouton Modifier
-        ttk.Button(fenetre, text="Modifier", command=lambda: self.modifier_abonnement(abo)).pack(pady=5)
-
-        # Bouton Supprimer
-        ttk.Button(fenetre, text="Supprimer", command=lambda: self.supprimer_abonnement(abo['numAbo'], fenetre)).pack(pady=5)
-    
-    def ajouter_abonnement(self):
+    def ajouter_abonnement(self, type_abonnement):
         # Fenêtre d'ajout d'abonnement
         fenetre = tk.Toplevel(self)
         fenetre.title("Ajouter un abonnement")
         fenetre.geometry("400x300")
 
-        # Sélectionner le type d'abonnement (Annuel ou Occasionnel)
-        ttk.Label(fenetre, text="Type d'abonnement :").pack(pady=10)
-
-        type_var = tk.StringVar()
-
-        # Choisir entre Abonnement Annuel ou Occasionnel
-        type_combobox = ttk.Combobox(fenetre, textvariable=type_var, values=["annuel", "occasionnel"], state="readonly")
-        type_combobox.pack(pady=10)
-        type_combobox.set("annuel")  # Par défaut, l'abonnement est annuel
-
-        # Créer les champs supplémentaires en fonction du type choisi
-        def afficher_options_abonnement(event):
-            # Supprimer les anciens widgets
-            for widget in fenetre.winfo_children():
-                if isinstance(widget, ttk.Entry) or isinstance(widget, ttk.Label):
-                    widget.destroy()
-
-            # Afficher les champs en fonction du type d'abonnement sélectionné
-            if type_var.get() == "annuel":
+        def afficher_options_abonnement(type_choisi):
+            if type_choisi == "annuel":
                 ttk.Label(fenetre, text="Formule (classique/tarifReduit) :").pack(pady=10)
                 formule_var = tk.StringVar()
-                formule_entry = ttk.Entry(fenetre, textvariable=formule_var)
-                formule_entry.pack(pady=10)
+                ttk.Entry(fenetre, textvariable=formule_var).pack(pady=10)
 
                 def valider_annuel():
                     from DAO.DAOAbonnement import DAOAbonnement
                     if formule_var.get().strip().lower() not in ["classique", "tarifreduit"]:
                         messagebox.showerror("Erreur", "Formule invalide.")
                         return
-
-                    # Ajouter l'abonnement annuel
                     dao = DAOAbonnement.get_instance()
                     dao.ajouter_abonnement_annuel(self.vlauveur.numVlauveur, formule_var.get().strip().lower())
                     messagebox.showinfo("Succès", "Abonnement annuel ajouté.")
+                    from datetime import datetime
+                    now = datetime.now()
+                    self.vlauveur.generer_facture(mois=now.month, annee=now.year)
                     fenetre.destroy()
 
                 ttk.Button(fenetre, text="Ajouter Abonnement Annuel", command=valider_annuel).pack(pady=10)
 
-            elif type_var.get() == "occasionnel":
+            elif type_choisi == "occasionnel":
                 ttk.Label(fenetre, text="Durée (1j/7j) :").pack(pady=10)
                 duree_var = tk.StringVar()
-                duree_entry = ttk.Entry(fenetre, textvariable=duree_var)
-                duree_entry.pack(pady=10)
+                ttk.Entry(fenetre, textvariable=duree_var).pack(pady=10)
 
                 def valider_occasionnel():
                     from DAO.DAOAbonnement import DAOAbonnement
                     if duree_var.get().strip().lower() not in ["1j", "7j"]:
                         messagebox.showerror("Erreur", "Durée invalide.")
                         return
-
-                    # Ajouter l'abonnement occasionnel
-                    dao = DAO.DAOAbonnement.get_instance()
+                    dao = DAOAbonnement.get_instance()
                     dao.ajouter_abonnement_occasionnel(self.vlauveur.numVlauveur, duree_var.get().strip().lower())
                     messagebox.showinfo("Succès", "Abonnement occasionnel ajouté.")
+                    from datetime import datetime
+                    now = datetime.now()
+                    self.vlauveur.generer_facture(mois=now.month, annee=now.year)
                     fenetre.destroy()
 
                 ttk.Button(fenetre, text="Ajouter Abonnement Occasionnel", command=valider_occasionnel).pack(pady=10)
 
-        # Ajouter un event pour mettre à jour la fenêtre en fonction du type d'abonnement
-        type_combobox.bind("<<ComboboxSelected>>", afficher_options_abonnement)
-        
-        # Afficher les options d'abonnement au départ
-        afficher_options_abonnement(None)
+        afficher_options_abonnement(type_abonnement)
 
 
     def modifier_abonnement(self, abo):
@@ -211,14 +184,22 @@ class AccueilFrame(ttk.Frame):
 
     def supprimer_abonnement(self, num_abo, fenetre_parent):
         from DAO.DAOAbonnement import DAOAbonnement
+        from DAO.DAOVlauveur import DAOVlauveur
 
         confirm = messagebox.askyesno("Confirmation", "Supprimer l'abonnement ?")
         if confirm:
+            print("Suppression d’abonnement : num_abo =", num_abo)
             from Composants.abonnement import Abonnement
-            abo = Abonnement(num_abo, self.vlauveur.numVlauveur)
-            DAOAbonnement.get_instance().delete_abonnement(abo)
-            messagebox.showinfo("Succès", "Abonnement supprimé.")
-            fenetre_parent.destroy()
+            try:
+                if not DAOVlauveur.get_instance().retirer_abonnement(self.vlauveur.numVlauveur):
+                    messagebox.showerror("Erreur", "Impossible de dissocier l'abonnement du vlauveur.")
+                    return
+                abo = Abonnement(num_abo, self.vlauveur.numVlauveur)
+                DAOAbonnement.get_instance().delete_abonnement(abo)
+                messagebox.showinfo("Succès", "Abonnement supprimé.")
+                fenetre_parent.destroy()
+            except Exception as e:
+                messagebox.showerror("Erreur", f"Échec de la suppression : {e}")
 
     def voir_trajets(self):
         from DAO.DAOTrajet import DAOTrajet
@@ -291,11 +272,57 @@ class AccueilFrame(ttk.Frame):
         ttk.Button(fenetre, text="Exporter en CSV", command=exporter_csv).pack(pady=5)
 
     def voir_factures(self):
-        if len(self.vlauveur.factures) == 0:
-            messagebox.showinfo("Mes factures", "Aucune facture générée.")
-        else:
-            for facture in self.vlauveur.factures:
-                messagebox.showinfo("Facture", f"Facture #{facture['numero']}, mois {facture['mois']}/{facture['annee']}, montant : {facture['montant']}€")
+        from DAO.DAOSession import DAOSession
+        import csv
+        from tkinter import filedialog
+
+        def charger_factures():
+            try:
+                connection = DAOSession.get_connexion()
+                cursor = connection.cursor(dictionary=True)
+                cursor.execute("""
+                    SELECT numero AS numFacture, montantTotal AS montant, mois, annee, statut
+                    FROM Facture
+                    WHERE refVlauveur = %s
+                    ORDER BY annee DESC, mois DESC
+                """, (self.vlauveur.numVlauveur,))
+                return cursor.fetchall()
+            except Exception as e:
+                print("Erreur chargement factures :", e)
+                return []
+            finally:
+                if cursor:
+                    cursor.close()
+
+        def exporter_csv():
+            fichier = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+            if fichier:
+                with open(fichier, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["Numéro", "Montant", "Mois", "Année", "Statut"])
+                    for facture in factures_affichees:
+                        writer.writerow([facture["numFacture"], facture["montant"], facture["mois"], facture["annee"], facture["statut"]])
+                messagebox.showinfo("Export CSV", "Factures exportées avec succès.")
+
+        factures_affichees = charger_factures()
+
+        fenetre = tk.Toplevel(self)
+        fenetre.title("Mes factures")
+        fenetre.geometry("700x400")
+
+        colonnes = ["Numéro", "Montant", "Mois", "Année", "Statut"]
+        tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
+
+        for col in colonnes:
+            tableau.heading(col, text=col)
+            tableau.column(col, width=120)
+
+        for f in factures_affichees:
+            tableau.insert("", "end", values=(f["numFacture"], f["montant"], f["mois"], f["annee"], f["statut"]))
+
+        tableau.pack(expand=True, fill="both", padx=10, pady=10)
+
+        ttk.Button(fenetre, text="Exporter en CSV", command=exporter_csv).pack(pady=10)
 
     def km_total(self):
         total = self.vlauveur.total_km()

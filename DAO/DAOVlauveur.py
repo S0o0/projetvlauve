@@ -4,27 +4,30 @@ import hashlib
 import secrets
 
 class DAOVlauveur:
+    # Singleton : une seule instance DAO est partagée dans l'application
     unique_instance = None
 
     @staticmethod
     def get_instance():
+        # Retourne l'instance unique ou la crée si elle n'existe pas
         if DAOVlauveur.unique_instance is None:
             DAOVlauveur.unique_instance = DAOVlauveur()
         return DAOVlauveur.unique_instance
 
     def insert_vlauveur(self, vlauveur):
+        # Insère un nouvel utilisateur (vlauveur) et son abonnement associé
         cursor = None
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
 
-            # on hash le mdp que si il n'est pas déja hashé
+            # Hash le mot de passe s'il ne l'est pas encore
             if '/' not in vlauveur.motDePasse:
                 salt = secrets.token_hex(16)
                 hash_mdp = hashlib.sha256((vlauveur.motDePasse + salt).encode()).hexdigest()
                 vlauveur.motDePasse = f"{hash_mdp}/{salt}"
 
-            # 1. Insérer le Vlauveur sans spécifier numVlauveur
+            # 1. Insertion du vlauveur sans son ID (clé auto-incrémentée)
             sql_vlauveur = """
                 INSERT INTO Vlauveur (email, motDePasse, nom, prenom, telephone,
                                     numAdresse, nomRue, codePostal, nomVille, numAbo, numFacture)
@@ -44,20 +47,22 @@ class DAOVlauveur:
             cursor.execute(sql_vlauveur, valeurs_vlauveur)
             connection.commit()
 
-            # Récupérer l'ID nouvellement créé
+            # Récupère l'ID généré
             numVlauveur = cursor.lastrowid
-            vlauveur.numVlauveur = numVlauveur  # on le met aussi à jour dans ton objet Python
+            vlauveur.numVlauveur = numVlauveur
 
-            # 2. Créer un nouvel abonnement
+            # 2. Création de l'abonnement (numAbo unique)
             cursor.execute("SELECT MAX(numAbo) FROM Abonnement")
             result = cursor.fetchone()
             num_abo = (result[0] or 0) + 1
 
+            # Insère l'abonnement principal
             cursor.execute(
                 "INSERT INTO Abonnement (numAbo, refVlauveur) VALUES (%s, %s)",
                 (num_abo, numVlauveur)
             )
 
+            # Insère selon le type d'abonnement
             if vlauveur.typeAbo.lower() == "annuel":
                 cursor.execute(
                     "INSERT INTO AbonnementAnnuel (numAbo, typeAbonnement) VALUES (%s, %s)",
@@ -71,12 +76,11 @@ class DAOVlauveur:
             else:
                 raise ValueError("Type d'abonnement invalide.")
 
-            # 3. Mise à jour du numAbo dans le Vlauveur
+            # 3. Mise à jour du champ numAbo dans le Vlauveur
             cursor.execute(
                 "UPDATE Vlauveur SET numAbo = %s WHERE numVlauveur = %s",
                 (num_abo, numVlauveur)
             )
-
             connection.commit()
             return numVlauveur
 
@@ -89,29 +93,24 @@ class DAOVlauveur:
             if cursor:
                 cursor.close()
 
-
-
     def delete_vlauveur(self, vlauveur):
+        # Supprime un vlauveur par son ID
         sql = "DELETE FROM Vlauveur WHERE numVlauveur = %s"
-        valeurs = (vlauveur.get_numVlauveur(),)
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
-            cursor.execute(sql, valeurs)
+            cursor.execute(sql, (vlauveur.get_numVlauveur(),))
             return True
         except Error as e:
-            print("\n<--------------------------------------->")
             print(f"Erreur lors de la suppression de vlauveur : {e}")
-            print(sql)
-            print(valeurs)
-            print("rollback")
-            connection.rollback() 
+            connection.rollback()
             return False
         finally:
             if cursor:
                 cursor.close()
 
     def update_vlauveur(self, vlauveur):
+        # Met à jour les informations d’un vlauveur
         sql = """
             UPDATE Vlauveur SET email=%s, motDePasse=%s, nom=%s, prenom=%s, telephone=%s,
             numAdresse=%s, nomRue=%s, codePostal=%s, nomVille=%s, numAbo=%s, numFacture=%s
@@ -138,6 +137,7 @@ class DAOVlauveur:
                 cursor.close()
 
     def find_by_id(self, numVlauveur):
+        # Recherche un vlauveur par son identifiant
         sql = "SELECT * FROM Vlauveur WHERE numVlauveur = %s"
         try:
             connection = DAOSession.get_connexion()
@@ -146,8 +146,7 @@ class DAOVlauveur:
             result = cursor.fetchone()
             if result:
                 return self.set_all_values(result)
-            else:
-                return None
+            return None
         except Error as e:
             print(f"Erreur lors de la récupération du vlauveur : {e}")
             return None
@@ -156,8 +155,8 @@ class DAOVlauveur:
                 cursor.close()
 
     def find_by_credentials(self, email, motDePasse):
+        # Authentifie un utilisateur par email + mot de passe
         sql = "SELECT * FROM Vlauveur WHERE email = %s"
-        cursor = None
         try:
             connection = DAOSession.get_connexion()
             with connection.cursor(dictionary=True) as cursor:
@@ -168,36 +167,30 @@ class DAOVlauveur:
                     stored_hash, stored_salt = result["motDePasse"].split("/")
                 except ValueError:
                     return None
-
+                # Compare le hash recomputé avec celui stocké
                 hash_mdp = hashlib.sha256((motDePasse + stored_salt).encode()).hexdigest()
                 if hash_mdp == stored_hash:
-                    return self.set_all_values(result)  # L'utilisateur est authentifié
-                else:
-                    return None
-            else:
-                return None
+                    return self.set_all_values(result)
+            return None
         except Error as e:
             print(f"Erreur lors de la vérification des identifiants : {e}")
             return None
 
-
-
-
     def set_all_values(self, rs):
+        # Construit un objet Vlauveur + ses trajets
         from Composants.vlauveur import Vlauveur
         from Composants.trajet import Trajet
+
         vlauveur = Vlauveur(
             rs["numVlauveur"], rs["email"], rs["motDePasse"],
             rs["nom"], rs["prenom"], rs["telephone"],
             rs["numAdresse"], rs["nomRue"], rs["codePostal"],
             rs["nomVille"], rs["numAbo"]
         )
-        # Si tu as des trajets à charger, vérifie aussi leur récupération
         try:
             cursor = DAOSession.get_connexion().cursor(dictionary=True)
             cursor.execute("SELECT * FROM Trajet WHERE refVlauveur = %s", (rs["numVlauveur"],))
-            trajets_data = cursor.fetchall()
-            for t in trajets_data:
+            for t in cursor.fetchall():
                 trajet = Trajet(
                     t['ref'], t['stationDepart'], t['stationArrivee'], t['nbKmParcouru'],
                     t['dateArrivee'], t['dateRetour'], t['heureArrivee'], t['heureRetour'], t['refVlauveur']
@@ -208,30 +201,34 @@ class DAOVlauveur:
         finally:
             if cursor:
                 cursor.close()
-
         return vlauveur
 
-    
     def get_all_vlauveurs(self):
-        from Composants.trajet import Trajet
-        sql = "SELECT * FROM Vlauveur"
+        # Récupère tous les vlauveurs depuis la base
         try:
-            connection = DAOSession.get_connexion()  # Récupérer la connexion à la base de données
-            cursor = connection.cursor(dictionary=True)  # Utiliser un curseur pour récupérer les résultats sous forme de dictionnaire
-            cursor.execute(sql)  # Exécuter la requête SQL
-            results = cursor.fetchall()  # Récupérer tous les résultats
-            vlauveurs = []  # Liste pour stocker les objets Vlauveur
-            
-            # Pour chaque ligne dans les résultats, créer un objet Vlauveur et l'ajouter à la liste
-            for result in results:
-                vlauveur = self.set_all_values(result)  # Créer un objet Vlauveur à partir des données
-                vlauveurs.append(vlauveur)  # Ajouter l'objet à la liste
-
-            return vlauveurs  # Retourner la liste des vlauveurs
-
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM Vlauveur")
+            results = cursor.fetchall()
+            return [self.set_all_values(r) for r in results]
         except Error as e:
             print(f"Erreur lors de la récupération des vlauveurs : {e}")
-            return []  # Si une erreur survient, retourner une liste vide
+            return []
         finally:
             if cursor:
-                cursor.close()  # Fermer le curseur après utilisation
+                cursor.close()
+
+    def retirer_abonnement(self, ref_vlauveur):
+        # Supprime la référence d'abonnement d’un vlauveur (sans le supprimer lui-même)
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor()
+            cursor.execute("UPDATE Vlauveur SET numAbo = NULL WHERE numVlauveur = %s", (ref_vlauveur,))
+            connection.commit()
+            return True
+        except Error as e:
+            print(f"Erreur lors du retrait d'abonnement : {e}")
+            return False
+        finally:
+            if cursor:
+                cursor.close()

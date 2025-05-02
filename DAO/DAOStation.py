@@ -3,36 +3,40 @@ from DAO.DAOSession import DAOSession
 
 
 class DAOStation:
-    uneique_instance = None
+    # Implémente le pattern Singleton : une seule instance sera utilisée dans l'application
+    uneique_instance = None  # ⚠️ faute de frappe ici (devrait être 'unique_instance')
 
     @staticmethod
     def get_instance():
+        # Retourne l'instance unique de DAOStation, la crée si elle n'existe pas encore
         if DAOStation.uneique_instance is None:
             DAOStation.uneique_instance = DAOStation()
         return DAOStation.uneique_instance
 
     
     def get_all_stations(self):
+        # Récupère toutes les stations depuis la base de données
         sql = "SELECT * FROM Station;"
         try : 
-            connection = DAOSession.get_connexion()  # Récupérer la connexion à la base de données
-            cursor = connection.cursor(dictionary=True)  # Utiliser un curseur pour récupérer les résultats sous forme de dictionnaire
+            connection = DAOSession.get_connexion()  # Obtenir la connexion à la base
+            cursor = connection.cursor(dictionary=True)  # Récupération des résultats sous forme de dictionnaires
             cursor.execute(sql)  # Exécuter la requête SQL
-            results = cursor.fetchall()  # Récupérer tous les résultats
+            results = cursor.fetchall()  # Extraire tous les enregistrements
             stations = []
             
             for result in results :
-                station = self.set_all_values(result)
+                station = self.set_all_values(result)  # Convertit chaque enregistrement en objet Station
                 stations.append(station)
             return stations
         except Error as e:
             print(f"Erreur lors de la récupération des stations : {e}")
-            return []  # Si une erreur survient, retourner une liste vide
+            return []  # En cas d'erreur, retourne une liste vide
         finally:
             if cursor:
-                cursor.close()  # Fermer le curseur après utilisation
+                cursor.close()  # Toujours fermer le curseur après utilisation
 
     def insert_station(self, station):
+        # Insère une nouvelle station dans la base
         sql = """
             INSERT INTO Station (nom, adresse, capacite)
             VALUES (%s, %s, %s)
@@ -42,11 +46,11 @@ class DAOStation:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
             cursor.execute(sql, valeurs)
-            connection.commit()
+            connection.commit()  # Valide l'insertion
             return True
         except Error as e:
             print(f"Erreur lors de l'insertion de la station : {e}")
-            connection.rollback()
+            connection.rollback()  # Annule en cas d'erreur
             return False
         finally:
             if cursor:
@@ -160,6 +164,7 @@ class DAOStation:
     #     return les_stations
 
     def set_all_values(self, rs):
+        # Convertit un dictionnaire de données (résultat SQL) en objet Station
         from Composants.station import Station
         
         une_station = Station(

@@ -3,15 +3,18 @@ from DAO.DAOSession import DAOSession
 
 
 class DAOAbonnement:
+    # Attribut de classe pour stocker l'instance unique (pattern Singleton)
     unique_instance = None
 
     @staticmethod
     def get_instance():
+        # Retourne l'instance unique de DAOAbonnement, la crée si elle n'existe pas encore
         if DAOAbonnement.unique_instance is None:
             DAOAbonnement.unique_instance = DAOAbonnement()
         return DAOAbonnement.unique_instance
 
     def insert_abonnement(self, un_abonnement):
+        # Insère un nouvel abonnement dans la base
         sql = "INSERT INTO Abonnement (numAbo, refVlauveur) VALUES (%s, %s)"
         valeurs = (un_abonnement.get_numAbo(), un_abonnement.get_refVlauveur())
         try:
@@ -19,7 +22,6 @@ class DAOAbonnement:
             cursor = connection.cursor()
             cursor.execute(sql, valeurs)
             connection.commit()
-            # print(sql)
             return True
         except Error as e:
             print("\n<--------------------------------------->")
@@ -27,59 +29,62 @@ class DAOAbonnement:
             print(sql)
             print(valeurs)
             print("rollback")
-            connection.rollback() 
+            connection.rollback()
             return False
         finally:
             if cursor:
                 cursor.close()
-    
-    def ajouter_abonnement_annuel(numVlauveur, typeAbonnement):
-        # Code pour insérer un abonnement annuel dans la base de données
-        sql = """
-        INSERT INTO Abonnement (refVlauveur)
-        VALUES (%s)
-        """
-        cursor.execute(sql, (numVlauveur,))
-        numAbo = cursor.lastrowid
 
-        sql = """
-        INSERT INTO AbonnementAnnuel (numAbo, typeAbonnement)
-        VALUES (%s, %s)
-        """
-        cursor.execute(sql, (numAbo, typeAbonnement))
-        connection.commit()
-    
-    def ajouter_abonnement_occasionnel(numVlauveur, duree):
-        # Code pour insérer un abonnement occasionnel dans la base de données
-        sql = """
-        INSERT INTO Abonnement (refVlauveur)
-        VALUES (%s)
-        """
-        cursor.execute(sql, (numVlauveur,))
-        numAbo = cursor.lastrowid
+    def ajouter_abonnement_annuel(self, numAbo, typeAbonnement):
+        # Ajoute un abonnement annuel : insère d'abord l'entrée dans Abonnement (si absente), puis dans AbonnementAnnuel
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor()
+            cursor.execute("INSERT IGNORE INTO Abonnement (numAbo, refVlauveur) VALUES (%s, %s)", (numAbo, numAbo))
+            cursor.execute("INSERT INTO AbonnementAnnuel (numAbo, typeAbonnement) VALUES (%s, %s)", (numAbo, typeAbonnement))
+            connection.commit()
+            return numAbo
+        except Error as e:
+            print(f"Erreur ajout abonnement annuel : {e}")
+            connection.rollback()
+            return None
+        finally:
+            if cursor:
+                cursor.close()
 
-        sql = """
-        INSERT INTO AbonnementOccasionnel (numAbo, duree)
-        VALUES (%s, %s)
-        """
-        cursor.execute(sql, (numAbo, duree))
-        connection.commit()
-    
+    def ajouter_abonnement_occasionnel(self, numAbo, duree):
+        # Ajoute un abonnement occasionnel dans les deux tables concernées
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor()
+            cursor.execute("INSERT IGNORE INTO Abonnement (numAbo, refVlauveur) VALUES (%s, %s)", (numAbo, numAbo))
+            cursor.execute("INSERT INTO AbonnementOccasionnel (numAbo, duree) VALUES (%s, %s)", (numAbo, duree))
+            connection.commit()
+            return numAbo
+        except Error as e:
+            print(f"Erreur ajout abonnement occasionnel : {e}")
+            connection.rollback()
+            return None
+        finally:
+            if cursor:
+                cursor.close()
+
     def delete_abonnement(self, un_abonnement):
+        # Supprime un abonnement (et ses liens éventuels dans les tables liées)
         num_abo = un_abonnement.get_numAbo()
 
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
 
-            # Supprimer les enregistrements dans les tables dépendantes
+            # Supprimer les enregistrements associés
             cursor.execute("DELETE FROM AbonnementAnnuel WHERE numAbo = %s", (num_abo,))
             cursor.execute("DELETE FROM AbonnementOccasionnel WHERE numAbo = %s", (num_abo,))
 
-            # Mettre à NULL le champ refVlauveur dans la table Abonnement (évite conflit de contrainte)
+            # Libérer la clé étrangère refVlauveur
             cursor.execute("UPDATE Abonnement SET refVlauveur = NULL WHERE numAbo = %s", (num_abo,))
 
-            # Supprimer l'abonnement
+            # Supprimer l'abonnement principal
             cursor.execute("DELETE FROM Abonnement WHERE numAbo = %s", (num_abo,))
 
             connection.commit()
@@ -91,31 +96,25 @@ class DAOAbonnement:
             print("rollback")
             connection.rollback()
             return False
-
         finally:
             if cursor:
                 cursor.close()
 
-
-
-
-    
-    
     def find_abonnement(self, ref_vlauveur):
+        # Recherche un abonnement par la référence vlauveur
         sql_abo = "SELECT numAbo FROM Abonnement WHERE refVlauveur = %s"
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor(dictionary=True)
 
-            # Rechercher l'abonnement principal
             cursor.execute(sql_abo, (ref_vlauveur,))
             result = cursor.fetchone()
             if not result:
-                return None  # Aucun abonnement
+                return None
 
             numAbo = result["numAbo"]
 
-            # Vérifier si c’est un abonnement annuel
+            # Vérifie si c’est un abonnement annuel
             sql_annuel = "SELECT typeAbonnement FROM AbonnementAnnuel WHERE numAbo = %s"
             cursor.execute(sql_annuel, (numAbo,))
             rs_annuel = cursor.fetchone()
@@ -126,7 +125,7 @@ class DAOAbonnement:
                     "typeAbonnement": rs_annuel["typeAbonnement"]
                 }
 
-            # Vérifier si c’est un abonnement occasionnel
+            # Vérifie si c’est un abonnement occasionnel
             sql_occasionnel = "SELECT duree FROM AbonnementOccasionnel WHERE numAbo = %s"
             cursor.execute(sql_occasionnel, (numAbo,))
             rs_occ = cursor.fetchone()
@@ -147,12 +146,12 @@ class DAOAbonnement:
             print(f"Erreur lors de la recherche d'abonnement : {e}")
             print(sql_abo)
             return None
-
         finally:
             if cursor:
                 cursor.close()
 
     def update_abonnement(self, un_abonnement):
+        # Met à jour le champ refVlauveur d'un abonnement existant
         sql = "UPDATE Abonnement SET refVlauveur = %s WHERE numAbo = %s"
         valeurs = (un_abonnement.get_refVlauveur(), un_abonnement.get_numAbo())
         try:
@@ -166,14 +165,14 @@ class DAOAbonnement:
             print(sql)
             print(valeurs)
             print("rollback")
-            connection.rollback() 
+            connection.rollback()
             return False
         finally:
             if cursor:
                 cursor.close()
 
-    
     def modifier_abonnement_annuel(self, num_abo, nouveau_type):
+        # Met à jour le type d’un abonnement annuel
         sql = "UPDATE AbonnementAnnuel SET typeAbonnement = %s WHERE numAbo = %s"
         valeurs = (nouveau_type, num_abo)
         try:
@@ -192,6 +191,7 @@ class DAOAbonnement:
                 cursor.close()
 
     def modifier_abonnement_occasionnel(self, num_abo, nouvelle_duree):
+        # Met à jour la durée d’un abonnement occasionnel
         sql = "UPDATE AbonnementOccasionnel SET duree = %s WHERE numAbo = %s"
         valeurs = (nouvelle_duree, num_abo)
         try:
@@ -209,45 +209,8 @@ class DAOAbonnement:
             if cursor:
                 cursor.close()
 
-    
-    # def select_abonnement(self, un_abonnement):
-    #     les_abonnements = []
-    #     sql = "SELECT * FROM abonnement WHERE "
-    #     critere_id_vin = un_abonnement.get_idVin()
-    #     critere_id_buveur = un_abonnement.get_idBuveur()
-    #     critere_qte = un_abonnement.get_qte()
-    #     valeurs = []
-
-    #     if critere_id_vin is not None:
-    #         sql += "idVin = %s"
-    #         valeurs.append(critere_id_vin)
-    #     elif critere_id_buveur is not None:
-    #         sql += "buveurId = %s"
-    #         valeurs.append(critere_id_buveur)
-    #     elif critere_qte is not None:
-    #         sql += "nbBouteilles = %s"
-    #         valeurs.append(critere_qte)
-    #     else:
-    #         sql = "SELECT * FROM abonnement"
-
-    #     try:
-    #         connection = DAOSession.get_connexion()
-    #         cursor = connection.cursor(dictionary=True)
-    #         cursor.execute(sql, tuple(valeurs))
-    #         rs = cursor.fetchall()
-    #         for row in rs:
-    #             les_abonnements.append(self.set_all_values(row))
-    #     except Error as e:
-    #         print("\n<--------------------------------------->")
-    #         print(f"Erreur lors de la recherche de abonnement : {e}")
-    #         print(sql)
-    #         print(valeurs)
-    #     finally:
-    #         if cursor:
-    #             cursor.close()
-    #     return les_abonnements
-
     def set_all_values(self, rs):
+        # Construit un objet Abonnement à partir d’un dictionnaire de résultats SQL
         from Composants.abonnement import Abonnement
         un_abonnement = Abonnement(rs["numAbo"], rs["refVlauveur"])
         return un_abonnement
