@@ -18,6 +18,7 @@ class DAOAbonnement:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
             cursor.execute(sql, valeurs)
+            connection.commit()
             # print(sql)
             return True
         except Error as e:
@@ -31,26 +32,72 @@ class DAOAbonnement:
         finally:
             if cursor:
                 cursor.close()
+    
+    def ajouter_abonnement_annuel(numVlauveur, typeAbonnement):
+        # Code pour insérer un abonnement annuel dans la base de données
+        sql = """
+        INSERT INTO Abonnement (refVlauveur)
+        VALUES (%s)
+        """
+        cursor.execute(sql, (numVlauveur,))
+        numAbo = cursor.lastrowid
 
+        sql = """
+        INSERT INTO AbonnementAnnuel (numAbo, typeAbonnement)
+        VALUES (%s, %s)
+        """
+        cursor.execute(sql, (numAbo, typeAbonnement))
+        connection.commit()
+    
+    def ajouter_abonnement_occasionnel(numVlauveur, duree):
+        # Code pour insérer un abonnement occasionnel dans la base de données
+        sql = """
+        INSERT INTO Abonnement (refVlauveur)
+        VALUES (%s)
+        """
+        cursor.execute(sql, (numVlauveur,))
+        numAbo = cursor.lastrowid
+
+        sql = """
+        INSERT INTO AbonnementOccasionnel (numAbo, duree)
+        VALUES (%s, %s)
+        """
+        cursor.execute(sql, (numAbo, duree))
+        connection.commit()
+    
     def delete_abonnement(self, un_abonnement):
-        sql = "DELETE FROM Abonnement WHERE numAbo = %s"
-        valeurs = (un_abonnement.get_numAbo(),)
+        num_abo = un_abonnement.get_numAbo()
+
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
-            cursor.execute(sql, valeurs)
+
+            # Supprimer les enregistrements dans les tables dépendantes
+            cursor.execute("DELETE FROM AbonnementAnnuel WHERE numAbo = %s", (num_abo,))
+            cursor.execute("DELETE FROM AbonnementOccasionnel WHERE numAbo = %s", (num_abo,))
+
+            # Mettre à NULL le champ refVlauveur dans la table Abonnement (évite conflit de contrainte)
+            cursor.execute("UPDATE Abonnement SET refVlauveur = NULL WHERE numAbo = %s", (num_abo,))
+
+            # Supprimer l'abonnement
+            cursor.execute("DELETE FROM Abonnement WHERE numAbo = %s", (num_abo,))
+
+            connection.commit()
             return True
+
         except Error as e:
             print("\n<--------------------------------------->")
             print(f"Erreur lors de la suppression de l'abonnement : {e}")
-            print(sql)
-            print(valeurs)
             print("rollback")
-            connection.rollback() 
+            connection.rollback()
             return False
+
         finally:
             if cursor:
                 cursor.close()
+
+
+
 
     
     
@@ -125,6 +172,44 @@ class DAOAbonnement:
             if cursor:
                 cursor.close()
 
+    
+    def modifier_abonnement_annuel(self, num_abo, nouveau_type):
+        sql = "UPDATE AbonnementAnnuel SET typeAbonnement = %s WHERE numAbo = %s"
+        valeurs = (nouveau_type, num_abo)
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor()
+            cursor.execute(sql, valeurs)
+            connection.commit()
+            return True
+        except Error as e:
+            print(f"Erreur modification abonnement annuel : {e}")
+            print(sql, valeurs)
+            connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()
+
+    def modifier_abonnement_occasionnel(self, num_abo, nouvelle_duree):
+        sql = "UPDATE AbonnementOccasionnel SET duree = %s WHERE numAbo = %s"
+        valeurs = (nouvelle_duree, num_abo)
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor()
+            cursor.execute(sql, valeurs)
+            connection.commit()
+            return True
+        except Error as e:
+            print(f"Erreur modification abonnement occasionnel : {e}")
+            print(sql, valeurs)
+            connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()
+
+    
     # def select_abonnement(self, un_abonnement):
     #     les_abonnements = []
     #     sql = "SELECT * FROM abonnement WHERE "
