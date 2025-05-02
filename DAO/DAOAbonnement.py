@@ -52,27 +52,58 @@ class DAOAbonnement:
             if cursor:
                 cursor.close()
 
-    # def find_abonnement(self, id_vin, id_buveur):
-    #     sql = "SELECT * FROM abonnement WHERE idVin = %s AND buveurId = %s"
-    #     valeurs = (id_vin, id_buveur)
-    #     try:
-    #         connection = DAOSession.get_connexion()
-    #         cursor = connection.cursor(dictionary=True)
-    #         cursor.execute(sql, valeurs)
-    #         rs = cursor.fetchone()
-    #         if rs:
-    #             return self.set_all_values(rs)
-    #         else:
-    #             return None
-    #     except Error as e:
-    #         print("\n<--------------------------------------->")
-    #         print(f"Erreur lors de la recherche de abonnement : {e}")
-    #         print(sql)
-    #         print(valeurs)
-    #         return None
-    #     finally:
-    #         if cursor:
-    #             cursor.close()
+    
+    
+    def find_abonnement(self, ref_vlauveur):
+        sql_abo = "SELECT numAbo FROM Abonnement WHERE refVlauveur = %s"
+        try:
+            connection = DAOSession.get_connexion()
+            cursor = connection.cursor(dictionary=True)
+
+            # Rechercher l'abonnement principal
+            cursor.execute(sql_abo, (ref_vlauveur,))
+            result = cursor.fetchone()
+            if not result:
+                return None  # Aucun abonnement
+
+            numAbo = result["numAbo"]
+
+            # Vérifier si c’est un abonnement annuel
+            sql_annuel = "SELECT typeAbonnement FROM AbonnementAnnuel WHERE numAbo = %s"
+            cursor.execute(sql_annuel, (numAbo,))
+            rs_annuel = cursor.fetchone()
+            if rs_annuel:
+                return {
+                    "numAbo": numAbo,
+                    "type": "annuel",
+                    "typeAbonnement": rs_annuel["typeAbonnement"]
+                }
+
+            # Vérifier si c’est un abonnement occasionnel
+            sql_occasionnel = "SELECT duree FROM AbonnementOccasionnel WHERE numAbo = %s"
+            cursor.execute(sql_occasionnel, (numAbo,))
+            rs_occ = cursor.fetchone()
+            if rs_occ:
+                return {
+                    "numAbo": numAbo,
+                    "type": "occasionnel",
+                    "duree": rs_occ["duree"]
+                }
+
+            return {
+                "numAbo": numAbo,
+                "type": "inconnu"
+            }
+
+        except Error as e:
+            print("\n<--------------------------------------->")
+            print(f"Erreur lors de la recherche d'abonnement : {e}")
+            print(sql_abo)
+            return None
+
+        finally:
+            if cursor:
+                cursor.close()
 
     def update_abonnement(self, un_abonnement):
         sql = "UPDATE Abonnement SET refVlauveur = %s WHERE numAbo = %s"
