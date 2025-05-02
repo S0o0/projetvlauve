@@ -34,7 +34,7 @@ class DAOAbonnementAnnuel:
 
     def delete_abonnement_annuel(self, un_abonnement_annuel):
         sql = "DELETE FROM abonnement_annuel WHERE numAbo = %s"
-        valeurs = (un_abonnement_annuel.get_numAbo())
+        valeurs = (un_abonnement_annuel.get_numAbo(),)
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()

@@ -83,7 +83,70 @@ class AccueilFrame(ttk.Frame):
         else:
             ttk.Label(fenetre, text="Type d'abonnement non reconnu.").pack(pady=5)
 
-        
+        # Bouton Modifier
+        ttk.Button(fenetre, text="Modifier", command=lambda: self.modifier_abonnement(abo)).pack(pady=5)
+
+        # Bouton Supprimer
+        ttk.Button(fenetre, text="Supprimer", command=lambda: self.supprimer_abonnement(abo['numAbo'], fenetre)).pack(pady=5)
+    
+    def modifier_abonnement(self, abo):
+        fenetre_modif = tk.Toplevel(self)
+        fenetre_modif.title("Modifier l'abonnement")
+        fenetre_modif.geometry("400x300")
+
+        if abo["type"] == "annuel":
+            ttk.Label(fenetre_modif, text="Nouvelle formule (classique/tarifReduit):").pack(pady=5)
+            formule_var = tk.StringVar(value=abo["typeAbonnement"])
+            formule_entry = ttk.Entry(fenetre_modif, textvariable=formule_var)
+            formule_entry.pack(pady=5)
+
+            def valider():
+                from DAO.DAOAbonnement import DAOAbonnement
+                nouveau_type = formule_var.get().strip().lower()
+                if nouveau_type not in ["classique", "tarifReduit"]:
+                    messagebox.showerror("Erreur", "Formule invalide.")
+                    return
+
+                DAOAbonnement.get_instance().modifier_abonnement_annuel(abo["numAbo"], nouveau_type)
+                messagebox.showinfo("Succès", "Abonnement modifié.")
+                fenetre_modif.destroy()
+
+            ttk.Button(fenetre_modif, text="Valider", command=valider).pack(pady=10)
+
+        elif abo["type"] == "occasionnel":
+            ttk.Label(fenetre_modif, text="Nouvelle durée (en jours):").pack(pady=5)
+            duree_var = tk.StringVar(value=str(abo["duree"]))
+            duree_entry = ttk.Entry(fenetre_modif, textvariable=duree_var)
+            duree_entry.pack(pady=5)
+
+            def valider():
+                from DAO.DAOAbonnement import DAOAbonnement
+                try:
+                    nouvelle_duree = int(duree_var.get())
+                    if nouvelle_duree <= 0:
+                        raise ValueError
+                except ValueError:
+                    messagebox.showerror("Erreur", "Durée invalide.")
+                    return
+
+                DAOAbonnement.get_instance().modifier_abonnement_occasionnel(abo["numAbo"], nouvelle_duree)
+                messagebox.showinfo("Succès", "Abonnement modifié.")
+                fenetre_modif.destroy()
+
+            ttk.Button(fenetre_modif, text="Valider", command=valider).pack(pady=10)
+
+        else:
+            ttk.Label(fenetre_modif, text="Type non reconnu.").pack()
+
+    def supprimer_abonnement(self, num_abo, fenetre_parent):
+        from DAO.DAOAbonnement import DAOAbonnement
+
+        confirm = messagebox.askyesno("Confirmation", "Supprimer l'abonnement ?")
+        if confirm:
+            DAOAbonnement.get_instance().supprimer_abonnement(num_abo)
+            messagebox.showinfo("Succès", "Abonnement supprimé.")
+            fenetre_parent.destroy()
+
     
     def voir_trajets(self):
         if len(self.vlauveur.trajets) == 0:

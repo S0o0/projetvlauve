@@ -34,7 +34,7 @@ class DAOAbonnementOccasionnel:
 
     def delete_abonnement_occasionnel(self, un_abonnement_occasionnel):
         sql = "DELETE FROM abonnement_occasionnel WHERE numAbo = %s"
-        valeurs = (un_abonnement_occasionnel.get_numAbo())
+        valeurs = (un_abonnement_occasionnel.get_numAbo(),)
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()

@@ -13,7 +13,7 @@ class DAOAbonnement:
 
     def insert_abonnement(self, un_abonnement):
         sql = "INSERT INTO Abonnement (numAbo, refVlauveur) VALUES (%s, %s)"
-        valeurs = (abonnement.get_numAbo(), abonnement.get_refVlauveur())
+        valeurs = (un_abonnement.get_numAbo(), un_abonnement.get_refVlauveur())
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
@@ -34,7 +34,7 @@ class DAOAbonnement:
 
     def delete_abonnement(self, un_abonnement):
         sql = "DELETE FROM Abonnement WHERE numAbo = %s"
-        valeurs = (abonnement.get_numAbo(),)
+        valeurs = (un_abonnement.get_numAbo(),)
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
@@ -107,7 +107,7 @@ class DAOAbonnement:
 
     def update_abonnement(self, un_abonnement):
         sql = "UPDATE Abonnement SET refVlauveur = %s WHERE numAbo = %s"
-        valeurs = (abonnement.get_refVlauveur(), abonnement.get_numAbo())
+        valeurs = (un_abonnement.get_refVlauveur(), un_abonnement.get_numAbo())
         try:
             connection = DAOSession.get_connexion()
             cursor = connection.cursor()
