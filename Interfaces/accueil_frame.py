@@ -221,43 +221,74 @@ class AccueilFrame(ttk.Frame):
             fenetre_parent.destroy()
 
     def voir_trajets(self):
-        trajets = self.vlauveur.trajets
-        if not trajets:
-            messagebox.showinfo("Mes trajets", "Aucun trajet effectué.")
-            return
+        from DAO.DAOTrajet import DAOTrajet
+        import csv
+        from tkinter import filedialog
 
-        # Nouvelle fenêtre avec Treeview
+        tri_distance_asc = True
+        tri_date_asc = True
+
+        dao = DAOTrajet.get_instance()
+        trajets = dao.get_trajets_by_vlauveur(self.vlauveur.numVlauveur)
+
+        def trier_par_distance():
+            nonlocal trajets_affiches, tri_distance_asc
+            trajets_affiches.sort(key=lambda t: t["nbKmParcouru"], reverse=not tri_distance_asc)
+            tri_distance_asc = not tri_distance_asc
+            afficher_tableau(trajets_affiches)
+
+        def trier_par_date():
+            nonlocal trajets_affiches, tri_date_asc
+            trajets_affiches.sort(key=lambda t: t["dateArrivee"], reverse=not tri_date_asc)
+            tri_date_asc = not tri_date_asc
+            afficher_tableau(trajets_affiches)
+
+        def exporter_csv():
+            fichier = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+            if fichier:
+                with open(fichier, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["Station départ", "Station arrivée", "Distance", "Date arrivée", "Date retour", "Heure arrivée", "Heure retour"])
+                    for t in trajets_affiches:
+                        writer.writerow([
+                            t["stationDepart"], t["stationArrivee"], t["nbKmParcouru"],
+                            t["dateArrivee"], t["dateRetour"], t["heureArrivee"], t["heureRetour"]
+                        ])
+                messagebox.showinfo("Export CSV", "Historique exporté avec succès.")
+
+        def afficher_tableau(trajets_liste):
+            nonlocal trajets_affiches
+            for row in tableau.get_children():
+                tableau.delete(row)
+            trajets_affiches = trajets_liste
+            for t in trajets_liste:
+                tableau.insert("", "end", values=(
+                    t["stationDepart"], t["stationArrivee"], t["nbKmParcouru"],
+                    t["dateArrivee"], t["dateRetour"], t["heureArrivee"], t["heureRetour"]
+                ))
+
+        trajets_affiches = trajets
+
         fenetre = tk.Toplevel(self)
-        fenetre.title("Mes trajets")
-        fenetre.geometry("1200x400")
+        fenetre.title("Historique des trajets")
+        fenetre.geometry("1000x500")
 
-        colonnes = (
-            "Réf", "Départ", "Arrivée", "Km parcourus",
-            "Date départ", "Heure départ", "Date retour", "Heure retour", "Vlauveur"
-        )
-
+        colonnes = ["Départ", "Arrivée", "Distance", "Date arrivée", "Date retour", "Heure arrivée", "Heure retour"]
         tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
-
         for col in colonnes:
             tableau.heading(col, text=col)
-            tableau.column(col, width=120, anchor="center")
+            tableau.column(col, width=120)
+        tableau.pack(fill="both", expand=True, padx=10, pady=10)
 
-        for trajet in trajets:
-            tableau.insert("", "end", values=(
-                trajet.get_ref(),
-                trajet.get_stationDepart(),
-                trajet.get_stationArrivee(),
-                trajet.get_nbKmParcouru(),
-                trajet.get_dateArrivee(),
-                trajet.get_heureArrivee(),
-                trajet.get_dateRetour(),
-                trajet.get_heureRetour(),
-                trajet.get_refVlauveur()
-            ))
+        tri_frame = ttk.Frame(fenetre)
+        tri_frame.pack(pady=5)
 
-        tableau.pack(expand=True, fill="both", padx=10, pady=10)
+        ttk.Button(tri_frame, text="Trier par distance ↑↓", command=trier_par_distance).pack(side="left", padx=10)
+        ttk.Button(tri_frame, text="Trier par date ↑↓", command=trier_par_date).pack(side="left", padx=10)
 
+        afficher_tableau(trajets)
 
+        ttk.Button(fenetre, text="Exporter en CSV", command=exporter_csv).pack(pady=5)
 
     def voir_factures(self):
         if len(self.vlauveur.factures) == 0:
