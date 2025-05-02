@@ -165,17 +165,16 @@ class DAOStation:
         from Composants.station import Station
         
         une_station = Station(
-            numStation=rs["numStation"],
-            nom=rs["nom"],
-            coordonneesGPS=rs["coordonneesGPS"],
-            nomRue=rs["nomRue"],
-            numeroRue=rs["numeroRue"],
-            nbPlacesTotal=rs["nbPlacesTotal"],
-            nbPlacesElectriques=rs["nbPlacesElectriques"],
-            nbPlacesNonElectriques=rs["nbPlacesNonElectriques"],
-            nbVlauvesElectriques=rs["nbVlauvesElectriques"],
-            nbVlauvesNonElectriques=rs["nbVlauvesNonElectriques"],
-            numReseau=rs["numReseau"]
-        )
+            rs["numStation"],
+            rs["nom"],
+            rs["coordonneesGPS"],
+            rs["nomRue"],
+            rs["numeroRue"],
+            rs["nbPlacesTotal"],
+            rs["nbPlacesElectriques"],
+            rs["nbPlacesNonElectriques"],
+            rs["nbVlauvesElectriques"],
+            rs["nbVlauvesNonElectriques"],
+            rs["numReseau"])
         
         return une_station

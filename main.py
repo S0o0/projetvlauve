@@ -22,7 +22,6 @@ def main():
 
     # Ouvrir la session DAO
     DAOSession.open()
-
     # dao = DAOVlauveur()
     # email = "test@gmail.com"
     # mot_de_passe = "azerty"  # mot de passe en clair utilisé à l'inscription
