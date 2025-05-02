@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS Vlauve(
     dateCirculation DATE,
     nbKmParcouru DECIMAL(10,2),
     niveauBatterie FLOAT,
-    discriminant ENUM('vLauveElectrique', 'vlauveNonElectrique'),
+    discriminant ENUM('vlauveElectrique', 'vlauveNonElectrique'),
     refStation INT,
     PRIMARY KEY (ref),
     FOREIGN KEY (refStation) REFERENCES Station (numStation),
