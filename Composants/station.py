@@ -32,7 +32,7 @@ class Station :
     
     #Pas de différence entre ajoutervlauve et rendrevlauve
     def rendre_vlauve(self,v):
-        self.ajoutervlauve(v)
+        self.ajouter_vlauve(v)
     
     def repartition(self):
         compteurElectrique = 0
